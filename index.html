@@ -896,6 +896,18 @@ button{min-height:44px}
 }
 .urgent .dcard{animation:urgentShake .25s infinite}@keyframes urgentShake{25%{transform:translateX(-2px)}75%{transform:translateX(2px)}}
 .urgent .dtimer i{background:#ff3b3b!important}
+
+/* 標題列：上排小字（名字・科目），下排考卷名稱，最多兩行，不會被切掉 */
+h1#hd{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;align-items:center}
+.hdtx{display:flex;flex-direction:column;min-width:0;flex:1;line-height:1.25}
+.hdsub{font-size:.68em;font-weight:700;color:#ffd84d;letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hdmain{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
+@media (max-width:600px){
+  h1#hd{font-size:17px!important;gap:8px}
+  .hdsub{font-size:12px}
+  .hdav{flex:none}
+  .hdav svg{width:34px;height:42px}
+}
 </style>
 </head>
 <body>
@@ -985,7 +997,11 @@ const app = document.getElementById('app'), hd = document.getElementById('hd'),
 let backTo = null, state = null, penSeen = false, pads = [], curKid = null;
 
 function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
-function setHeader(title, back) { app.classList.remove('enter'); void app.offsetWidth; app.classList.add('enter'); if (typeof NumKey !== 'undefined') NumKey.close(); if (typeof SFX !== 'undefined') SFX.playMusic('menu'); document.querySelectorAll('.gameover').forEach(x => x.remove()); backBtn.textContent = '‹ 返回'; hd.textContent = title;
+function setHeader(title, back) { app.classList.remove('enter'); void app.offsetWidth; app.classList.add('enter'); if (typeof NumKey !== 'undefined') NumKey.close(); if (typeof SFX !== 'undefined') SFX.playMusic('menu'); document.querySelectorAll('.gameover').forEach(x => x.remove()); backBtn.textContent = '‹ 返回'; hd.textContent = '';
+  { const parts = String(title).split('・'); const box = el('span', 'hdtx');
+    if (parts.length > 1) { box.append(el('small', 'hdsub', parts.slice(0, -1).join('・')), el('span', 'hdmain', parts[parts.length - 1])); }
+    else box.append(el('span', 'hdmain', title));
+    hd.append(box); }
   if (curKid && curKid.avatar && !parentMode) { const a = el('span', 'hdav'); a.innerHTML = avatarSVG(curKid.avatar); hd.prepend(a); }
   backTo = back; backBtn.style.display = back ? 'inline-block' : 'none'; scoreEl.textContent = ''; }
 backBtn.onclick = () => backTo && backTo();

@@ -98,54 +98,55 @@ var SFX = (function () {
   function startTrack(name) {
     bgmStep = 0;
     if (name === 'menu') {
-      // 原創「電玩熱血主題曲」：150 BPM，D 小調 Dm – B♭ – C – A（英雄冒險感），沒有鼓，靠貝斯和琶音推進
-      // 結構（16 小節）：0–3 主歌（進行曲旋律）→ 4–5 漸強（琶音往上衝）→ 6–13 副歌（高亢主旋律＋和聲）→ 14–15 間奏（英雄號角）
+      // 原創「8-bit 電玩冒險主題」：150 BPM，D 小調 Dm – B♭ – C – A
+      // 老遊戲機的做法：25% 方波主旋律＋回音聲部、快速和弦琶音、三角波貝斯、雜訊打擊
+      // 結構（16 小節）：0–3 主歌 → 4–5 漸強 → 6–13 副歌 → 14–15 間奏號角
       const roots = [73.42, 58.27, 65.41, 55.0];                              // D – B♭ – C – A
       const chords = [[293.7, 349.2, 440], [233.1, 293.7, 349.2], [261.6, 329.6, 392], [277.2, 329.6, 440]];
       const _ = 0, A4 = 440, Bb4 = 466.2, C5 = 523.3, Cs5 = 554.4, D5 = 587.3, E5 = 659.3, F5 = 698.5, G5 = 784, A5 = 880, Bb5 = 932.3, C6 = 1046.5, Cs6 = 1108.7, D6 = 1174.7;
-      const verse = [                                                         // 主歌：進行曲節奏（原創）
+      const verse = [
         [D5, _, _, A4, D5, _, E5, _, F5, _, _, E5, D5, _, _, _],
         [F5, _, _, D5, F5, _, G5, _, A5, _, _, G5, F5, _, _, _],
         [E5, _, _, C5, E5, _, F5, _, G5, _, A5, _, G5, _, E5, _],
         [Cs5, _, _, E5, A5, _, G5, _, F5, _, E5, _, Cs5, _, _, _]];
-      const hook = [                                                          // 副歌：高亢、長音、英雄感（原創）
+      const hook = [
         [A5, _, _, _, F5, _, A5, _, D6, _, _, _, C6, _, A5, _],
         [Bb5, _, _, _, A5, _, F5, _, D5, _, F5, _, Bb5, _, _, _],
         [C6, _, _, _, G5, _, C6, _, E5, _, G5, _, C6, _, _, _],
         [A5, _, _, _, G5, _, F5, _, E5, _, _, _, Cs6, _, D6, _]];
-      const fanfare = [D5, _, D5, D5, A5, _, _, _, G5, _, F5, _, G5, _, A5, _];        // 間奏號角（原創）
-      const lead = (f, d, v) => { tone(f, d, 'square', v); tone(f * 1.005, d, 'sawtooth', v * .35); tone(f / 2, d, 'triangle', v * .4); }; // 熱血主旋律（像銅管＋8-bit）
-      const harm = (f, d, v) => tone(f * .8, d, 'triangle', v);                                                                       // 下方和聲
-      const arpN = (f, v) => tone(f, .07, 'square', v);                                                                                // 8-bit 琶音
-      const pad = (ch, d, v) => ch.forEach(f => { tone(f / 2, d, 'sawtooth', v); tone(f / 2 * 1.006, d, 'sawtooth', v * .7); });     // 弦樂墊底
-      const bass = (f, d, v) => { tone(f, d, 'triangle', v); tone(f * 2, d * .7, 'square', v * .12); };
-      const sub = (f, d, v) => tone(f, d, 'sine', v, f * .98);
+      const fanfare = [D5, _, D5, D5, A5, _, _, _, G5, _, F5, _, G5, _, A5, _];
+      const len = (arr, i) => { let k = i + 1; while (k < 16 && !arr[k]) k++; return Math.min(k - i, 4) * .1; };   // 音符長度＝到下一個音為止
+      const tri = (f, d, v) => tone(f, d, 'triangle', v);
+      const hat = (v) => noise(.02, v, 'highpass', 7000);
+      const snr = (v) => noise(.08, v, 'bandpass', 2500, 0, .6);
+      const kik = (v) => tone(120, .1, 'triangle', v, 50);
       bgmTimer = setInterval(() => {
         if (document.hidden) return;
         const st = bgmStep % 16, bar = Math.floor(bgmStep / 16) % 16, ci = bar % 4, ch = chords[ci], r = roots[ci];
         const verseP = bar < 4, pre = bar === 4 || bar === 5, chorus = bar >= 6 && bar < 14, inter = bar >= 14;
-        // 貝斯：八分音符奔跑（根音、八度交替）
-        if (st % 2 === 0) bass(r * (st % 4 === 2 ? 2 : 1), .13, chorus ? .17 : .14);
-        if (st === 0) sub(r, .5, chorus ? .26 : .18);
-        if (st === 0 && (chorus || verseP)) pad(ch, 1.8, chorus ? .008 : .006);
+        // 三角波貝斯：八度彈跳
+        tri(r * (st % 2 ? 4 : 2), .09, .2);
+        // 8-bit 打擊（輕）
+        if (st % 2 === 0) hat(chorus ? .04 : .025);
+        if (!verseP || bar >= 2) { if (st === 0 || st === 8 || (chorus && st === 10)) kik(.35); if (st === 4 || st === 12) snr(chorus ? .1 : .06); }
         if (verseP) {
-          if (st % 2 === 1) arpN(ch[(st >> 1) % 3] * 2, .012);
-          const n = verse[ci][st]; if (n) lead(n, .2, .032);
+          if (st % 4 === 2) pulse(ch[(st >> 2) % 3] * 2, .06, .025);
+          const n = verse[ci][st]; if (n) { const d = len(verse[ci], st); pulse(n, d, .055); pulse(n, d, .02, .15); }   // 主旋律＋回音
         }
         if (pre) {
           const k = bar - 4;
-          arpN(ch[st % 3] * (2 + (st > 7 ? 1 : 0) + k), .012 + k * .006 + st * .0006);   // 琶音越爬越高
-          if (k === 1 && st >= 8) lead([D5, E5, F5, G5, A5, Bb5, C6, Cs6][st - 8], .09, .028); // 往上衝的音階
-          if (st % 2 === 1) bass(r * 2, .08, .1);
+          pulse(ch[st % 3] * (2 + k), .09, .03 + k * .01 + st * .001);              // 快速和弦琶音往上爬
+          if (k === 1 && st >= 8) pulse([D5, E5, F5, G5, A5, Bb5, C6, Cs6][st - 8], .09, .05);
+          if (k === 1 && st >= 12) snr(.06 + (st - 12) * .03);
         }
         if (chorus) {
-          if (st % 2 === 1) arpN(ch[(st >> 1) % 3] * 4, .009);
-          const n = hook[ci][st]; if (n) { lead(n, .3, .036); harm(n, .3, .02); }
+          pulse(ch[st % 3] * 2, .1, .016);                                         // 經典 8-bit 和弦琶音（每格換音）
+          const n = hook[ci][st]; if (n) { const d = len(hook[ci], st); pulse(n, d, .06, 0, null); pulse(n / 2, d, .025); pulse(n, d, .02, .15); }
         }
         if (inter) {
-          const n = fanfare[st]; if (n) lead(n * (bar === 15 ? 1 : 1), .22, .034);
-          if (st % 4 === 0) pad(ch, .4, .008);
-          if (st % 2 === 1) arpN(ch[(st >> 1) % 3] * 2, .01);
+          const n = fanfare[st]; if (n) { pulse(n, .18, .055); pulse(n * 1.5, .18, .02); }  // 號角（五度和聲）
+          if (st % 4 === 0) pulse(ch[0] * 2, .3, .02);
+          if (bar === 15 && st >= 12) pulse(D5 * (1 + (st - 12) * .25), .08, .04);
         }
         bgmStep++;
       }, 100);
@@ -183,6 +184,40 @@ var SFX = (function () {
       src.connect(f); f.connect(g); g.connect(master); src.start(t); src.stop(t + dur + .02);
     } catch (e) {}
   }
+  // 柔和弦樂小提琴：三角波為主＋一點點鋸齒波、慢慢拉起來、延遲才出現的輕顫音、低通濾波，再送進一點空間回音
+  let vbus = null;
+  function vBus() {
+    if (vbus) return vbus;
+    const c = ac(), inp = c.createGain(), lp = c.createBiquadFilter(), dl = c.createDelay(), fb = c.createGain(), wet = c.createGain();
+    lp.type = 'lowpass'; lp.frequency.value = 1500; lp.Q.value = .4;
+    dl.delayTime.value = .23; fb.gain.value = .32; wet.gain.value = .35;
+    inp.connect(lp); lp.connect(master); lp.connect(dl); dl.connect(fb); fb.connect(dl); dl.connect(wet); wet.connect(master);
+    return (vbus = inp);
+  }
+  function violin(freq, dur, vol, delay) {
+    try {
+      const c = ac(), t = c.currentTime + (delay || 0), bus = vBus(), g = c.createGain(), lfo = c.createOscillator(), lg = c.createGain();
+      const oscs = [['triangle', 1, 1], ['triangle', 1.004, .7], ['sawtooth', .998, .12]].map(([ty, m, gv]) => { const o = c.createOscillator(), og = c.createGain(); o.type = ty; o.frequency.value = freq * m; og.gain.value = gv; o.connect(og); og.connect(g); return o; });
+      lfo.frequency.value = 5; lg.gain.setValueAtTime(0, t); lg.gain.linearRampToValueAtTime(0, t + .3); lg.gain.linearRampToValueAtTime(freq * .004, t + .6);
+      lfo.connect(lg); oscs.forEach(o => lg.connect(o.frequency));
+      const v = vol * .55, at = Math.min(.35, dur * .4);
+      g.gain.setValueAtTime(.0001, t); g.gain.linearRampToValueAtTime(v, t + at); g.gain.setValueAtTime(v, t + dur * .7); g.gain.linearRampToValueAtTime(.0001, t + dur + .25);
+      g.connect(bus);
+      [...oscs, lfo].forEach(x => { x.start(t); x.stop(t + dur + .35); });
+    } catch (e) {}
+  }
+  // 8-bit 方波（25% 佔空比，老遊戲機的聲音）
+  let pw25 = null;
+  function pulse(freq, dur, vol, delay, slide) {
+    try {
+      const c = ac(), t = c.currentTime + (delay || 0);
+      if (!pw25) { const n = 32, re = new Float32Array(n), im = new Float32Array(n); for (let k = 1; k < n; k++) im[k] = (2 / (k * Math.PI)) * Math.sin(k * Math.PI * .25); pw25 = c.createPeriodicWave(re, im); }
+      const o = c.createOscillator(), g = c.createGain(); o.setPeriodicWave(pw25); o.frequency.setValueAtTime(freq, t);
+      if (slide) o.frequency.linearRampToValueAtTime(slide, t + dur);
+      g.gain.setValueAtTime(vol, t); g.gain.setValueAtTime(vol, t + dur * .8); g.gain.linearRampToValueAtTime(.0001, t + dur);
+      o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + .02);
+    } catch (e) {}
+  }
   // 模擬人聲「啊」：鋸齒波 + 兩個共振峰濾波器，音高往下掉
   function voice(f0, f1, dur, delay, vol) {
     try {
@@ -213,7 +248,7 @@ var SFX = (function () {
     miss() { api.wrong(); setTimeout(() => api.ouch(), 200); },
     win() { if (!on) return; [523, 659, 784, 1046, 784, 1046].forEach((f, i) => tone(f, i > 3 ? .4 : .16, 'square', .07, null, i * .13)); [0, .3, .55].forEach(d => api.coin(.8 + d)); },
     tap() { if (!on) return; tone(700, .05, 'triangle', .05); },
-    // 背景音樂：menu＝電玩熱血主題、battle＝闖關音樂
+    // 背景音樂：menu＝8-bit 電玩冒險主題、battle＝闖關音樂
     playMusic(name) { want = name; if (cur === name && bgmTimer) return; api.bgmStop(); cur = name; if (!name || !on || !music || !unlocked) return; startTrack(name); },
     bgmStart() { api.playMusic(want || 'battle'); },
     bgmStop() { if (bgmTimer) { clearInterval(bgmTimer); bgmTimer = null; } cur = null; },
