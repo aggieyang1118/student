@@ -823,7 +823,7 @@ button{min-height:44px}
   .examrow > div:nth-child(2){flex:1 1 calc(100% - 70px);min-width:0}
   .examrow button{flex:1}
   /* 戰鬥面板：兩邊頭像縮小，名字和愛心不擠 */
-  .arena{padding:8px 10px!important;gap:6px}
+  .arena{padding:8px 10px 62px!important;gap:6px}
   .fighter.me .sprite{width:40px;height:52px}
   .fighter.me .sprite svg{width:38px!important;height:50px!important}
   .fighter.foe .sprite{width:62px!important;height:62px!important}
@@ -858,6 +858,44 @@ button{min-height:44px}
 }
 .subj .ic::after,.fighter.foe .sprite::after{content:none}
 .subj .ic,.fighter.foe .sprite{animation:dread 3.2s ease-in-out infinite}@keyframes dread{0%,100%{filter:none}92%{filter:none}94%{filter:brightness(1.8) contrast(1.3)}96%{filter:none}}
+
+/* ===== 手機閱讀舒適版：字體適中、行距寬、顏色柔和、不刺眼 ===== */
+@media (max-width:600px){
+  body{-webkit-font-smoothing:antialiased}
+  .sec{padding:16px 14px!important;background:#fffdf7!important;border-width:3px!important}
+  .sec h2{font-size:17px!important;padding:4px 12px!important;line-height:1.4;display:block!important}
+  .sec h2 small{font-size:13px!important;display:inline-block}
+  .q{font-size:18px!important;line-height:1.75!important;padding:12px 0 12px 26px!important;letter-spacing:.3px}
+  .qt{font-weight:500!important;color:#33384a!important}
+  .opt{font-size:17px!important;min-height:48px!important;padding:8px 14px!important;font-weight:600}
+  .wideopts .opt{font-size:17px!important;min-height:50px!important}
+  .opts.codes .opt{font-size:24px!important;min-height:52px!important;min-width:58px!important}
+  .opts{gap:8px!important}
+  .explain,.hintbox{font-size:15px!important;line-height:1.6}
+  /* 考卷列表：標題整行顯示，狀態和按鈕放下一行 */
+  .examrow{display:grid!important;grid-template-columns:44px 1fr 1fr;grid-template-areas:"n t t" "n b g";gap:8px 12px!important;padding:12px 14px!important;min-height:0!important;font-size:17px!important;align-items:center}
+  .examrow::before{grid-area:n;width:40px!important;height:40px!important;font-size:18px!important;border-radius:10px!important;align-self:start}
+  .examrow > b{grid-area:t;line-height:1.4;font-size:17px}
+  .examrow .meta{font-size:13px!important;color:#7a8090}
+  .examrow .badge{grid-area:b;justify-self:start;font-size:14px!important;padding:3px 12px!important}
+  .examrow .go{grid-area:g;justify-self:end;font-size:15px!important;padding:6px 14px!important}
+  /* 戰鬥面板 */
+  .hpbar{height:18px!important}
+  .hpbar span{font-size:11px!important;line-height:14px!important}
+  .hintbtn{font-size:12px!important;padding:3px 7px!important}
+  .vsx{font-size:18px!important}
+}
+
+@media (max-width:600px){
+  .optlist{font-size:17px!important;line-height:1.6;gap:4px 12px!important}
+  .optlist b{font-weight:600;color:#2f80ed}
+  .optlist .optitem > span{font-weight:500;color:#33384a}
+  .vsx{display:none!important}
+  .vs{flex-wrap:nowrap!important;gap:4px!important;align-self:start}
+  .arena .vs .hintbtn{position:absolute;right:12px;bottom:32px;z-index:2;min-height:0!important;line-height:1.3;top:auto!important;height:auto!important;max-height:30px;display:flex;align-items:center;gap:3px}
+}
+.urgent .dcard{animation:urgentShake .25s infinite}@keyframes urgentShake{25%{transform:translateX(-2px)}75%{transform:translateX(2px)}}
+.urgent .dtimer i{background:#ff3b3b!important}
 </style>
 </head>
 <body>
@@ -1782,6 +1820,8 @@ function renderDrill(set) {
     if (!view.isConnected) return;
     const e = (Date.now() - t0) / 1000; tfill.style.width = Math.max(0, 100 - e / LIMIT * 100) + '%'; tfill.className = e > LIMIT * .65 ? 'slow' : '';
     if (e >= LIMIT && !busy) { timeUp(); return; }
+    const rem = LIMIT - e;
+    if (!busy && rem <= 3.5) { const now = Date.now(), gap = 110 + rem * 85; if (!tick.lb || now - tick.lb >= gap) { tick.lb = now; SFX.urgent(1 - rem / 3.5); view.classList.toggle('urgent', true); } } else view.classList.remove('urgent');
     raf = requestAnimationFrame(tick);
   }
   function timeUp() {

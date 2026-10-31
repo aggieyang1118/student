@@ -98,65 +98,57 @@ var SFX = (function () {
   function startTrack(name) {
     bgmStep = 0;
     if (name === 'menu') {
-      // 原創拉丁風（雷鬼動 dembow 節奏）：100 BPM，馬林巴琴旋律、康加鼓、刮瓜、響棒、銅管
-      // 結構（16 小節循環）：0–3 主歌 → 4–5 預副歌 → 6–13 副歌（完整 dembow）→ 14–15 間奏
-      const roots = [55, 43.65, 49, 41.2];                                    // Am – F – G – E（拉丁味的下行和弦）
-      const chords = [[220, 261.6, 329.6], [174.6, 220, 261.6], [196, 246.9, 293.7], [207.7, 246.9, 329.6]];
-      const _ = 0, E4 = 329.6, Gs4 = 415.3, A4 = 440, B4 = 493.9, C5 = 523.3, D5 = 587.3, E5 = 659.3, F5 = 698.5, G5 = 784, A5 = 880;
-      const verse = [                                                         // 主歌：馬林巴琴（原創）
-        [A4, _, C5, _, E5, _, _, D5, _, C5, _, _, B4, _, A4, _],
-        [C5, _, A4, _, F5, _, _, E5, _, D5, _, _, C5, _, _, _],
-        [B4, _, D5, _, G5, _, _, F5, _, E5, _, _, D5, _, B4, _],
-        [Gs4, _, B4, _, E5, _, _, D5, _, B4, _, Gs4, _, E4, _, _]];
-      const hook = [                                                          // 副歌：銅管＋馬林巴琴 hook（原創）
-        [E5, _, _, E5, _, _, D5, _, E5, _, _, A5, _, G5, E5, _],
-        [F5, _, _, F5, _, _, E5, _, F5, _, _, A5, _, G5, F5, _],
-        [D5, _, _, D5, _, _, B4, _, D5, _, _, G5, _, F5, D5, _],
-        [E5, _, _, Gs4, _, _, B4, _, E5, _, D5, _, B4, _, Gs4, _]];
-      const marimba = (f, v) => { tone(f, .18, 'sine', v); tone(f * 4, .05, 'sine', v * .25); tone(f * 2, .09, 'triangle', v * .3); };
-      const brass = (f, v) => { tone(f, .16, 'sawtooth', v); tone(f * 1.006, .16, 'square', v * .5); };
-      const conga = (f, v) => tone(f, .12, 'sine', v, f * .8);
-      const guiro = (v) => { for (let i = 0; i < 4; i++) noise(.018, v, 'bandpass', 4200, i * .022, 3); };
-      const kick = (v) => { tone(150, .22, 'sine', v, 40); noise(.01, v * .4, 'highpass', 3000); };
-      const snare = (v) => { noise(.09, v, 'bandpass', 1900, 0, .8); tone(220, .05, 'triangle', v * .4); };
+      // 原創「電玩熱血主題曲」：150 BPM，D 小調 Dm – B♭ – C – A（英雄冒險感），沒有鼓，靠貝斯和琶音推進
+      // 結構（16 小節）：0–3 主歌（進行曲旋律）→ 4–5 漸強（琶音往上衝）→ 6–13 副歌（高亢主旋律＋和聲）→ 14–15 間奏（英雄號角）
+      const roots = [73.42, 58.27, 65.41, 55.0];                              // D – B♭ – C – A
+      const chords = [[293.7, 349.2, 440], [233.1, 293.7, 349.2], [261.6, 329.6, 392], [277.2, 329.6, 440]];
+      const _ = 0, A4 = 440, Bb4 = 466.2, C5 = 523.3, Cs5 = 554.4, D5 = 587.3, E5 = 659.3, F5 = 698.5, G5 = 784, A5 = 880, Bb5 = 932.3, C6 = 1046.5, Cs6 = 1108.7, D6 = 1174.7;
+      const verse = [                                                         // 主歌：進行曲節奏（原創）
+        [D5, _, _, A4, D5, _, E5, _, F5, _, _, E5, D5, _, _, _],
+        [F5, _, _, D5, F5, _, G5, _, A5, _, _, G5, F5, _, _, _],
+        [E5, _, _, C5, E5, _, F5, _, G5, _, A5, _, G5, _, E5, _],
+        [Cs5, _, _, E5, A5, _, G5, _, F5, _, E5, _, Cs5, _, _, _]];
+      const hook = [                                                          // 副歌：高亢、長音、英雄感（原創）
+        [A5, _, _, _, F5, _, A5, _, D6, _, _, _, C6, _, A5, _],
+        [Bb5, _, _, _, A5, _, F5, _, D5, _, F5, _, Bb5, _, _, _],
+        [C6, _, _, _, G5, _, C6, _, E5, _, G5, _, C6, _, _, _],
+        [A5, _, _, _, G5, _, F5, _, E5, _, _, _, Cs6, _, D6, _]];
+      const fanfare = [D5, _, D5, D5, A5, _, _, _, G5, _, F5, _, G5, _, A5, _];        // 間奏號角（原創）
+      const lead = (f, d, v) => { tone(f, d, 'square', v); tone(f * 1.005, d, 'sawtooth', v * .35); tone(f / 2, d, 'triangle', v * .4); }; // 熱血主旋律（像銅管＋8-bit）
+      const harm = (f, d, v) => tone(f * .8, d, 'triangle', v);                                                                       // 下方和聲
+      const arpN = (f, v) => tone(f, .07, 'square', v);                                                                                // 8-bit 琶音
+      const pad = (ch, d, v) => ch.forEach(f => { tone(f / 2, d, 'sawtooth', v); tone(f / 2 * 1.006, d, 'sawtooth', v * .7); });     // 弦樂墊底
+      const bass = (f, d, v) => { tone(f, d, 'triangle', v); tone(f * 2, d * .7, 'square', v * .12); };
+      const sub = (f, d, v) => tone(f, d, 'sine', v, f * .98);
       bgmTimer = setInterval(() => {
         if (document.hidden) return;
         const st = bgmStep % 16, bar = Math.floor(bgmStep / 16) % 16, ci = bar % 4, ch = chords[ci], r = roots[ci];
         const verseP = bar < 4, pre = bar === 4 || bar === 5, chorus = bar >= 6 && bar < 14, inter = bar >= 14;
-        // 響棒 3-2 clave（全程）
-        if ([0, 3, 6, 10, 12].includes(st)) tone(2400, .03, 'sine', .035);
-        if (verseP || inter) {
-          if (st === 0 || st === 8) kick(.3);
-          if (st === 3 || st === 11) conga(330, .12);
-          if (st === 6 || st === 14) conga(250, .1);
-          if (st % 4 === 2) guiro(.03);
-          if (st === 0 || st === 10) tone(r * 2, .3, 'sine', .14);
-          const n = verse[ci][st]; if (n) marimba(n, inter ? .05 : .065);
+        // 貝斯：八分音符奔跑（根音、八度交替）
+        if (st % 2 === 0) bass(r * (st % 4 === 2 ? 2 : 1), .13, chorus ? .17 : .14);
+        if (st === 0) sub(r, .5, chorus ? .26 : .18);
+        if (st === 0 && (chorus || verseP)) pad(ch, 1.8, chorus ? .008 : .006);
+        if (verseP) {
+          if (st % 2 === 1) arpN(ch[(st >> 1) % 3] * 2, .012);
+          const n = verse[ci][st]; if (n) lead(n, .2, .032);
         }
         if (pre) {
           const k = bar - 4;
-          if (st % 4 === 0) kick(.4);
-          if (st === 3 || st === 6 || st === 11 || st === 14) snare(.07 + k * .03);
-          if (k === 1 && st >= 8) conga(280 + st * 12, .1);                       // 康加鼓連打往上
-          if (st % 2 === 0) guiro(.035);
-          if (st === 0) ch.forEach(f => brass(f * 2, .012 + k * .006));
-          const n = verse[ci][st]; if (n) marimba(n, .06);
-          if (k === 1 && st === 15) noise(.1, .15, 'lowpass', 900);
+          arpN(ch[st % 3] * (2 + (st > 7 ? 1 : 0) + k), .012 + k * .006 + st * .0006);   // 琶音越爬越高
+          if (k === 1 && st >= 8) lead([D5, E5, F5, G5, A5, Bb5, C6, Cs6][st - 8], .09, .028); // 往上衝的音階
+          if (st % 2 === 1) bass(r * 2, .08, .1);
         }
         if (chorus) {
-          if (st % 4 === 0) kick(.65);                                            // dembow：大鼓四拍
-          if (st === 3 || st === 6 || st === 11 || st === 14) snare(.16);          // dembow：小鼓切分
-          if (st === 2 || st === 10) conga(330, .12);
-          if (st === 7 || st === 15) conga(250, .12);
-          if (st % 2 === 1) noise(.02, .035, 'highpass', 9000);
-          if (st % 4 === 2) guiro(.04);
-          if (st === 0 || st === 3 || st === 8 || st === 11) tone(r * 2, .22, 'sine', .24, r * 1.97); // 808 低音跟著節奏
-          if (st === 0 || st === 6) ch.forEach(f => brass(f * 2, .01));
-          const n = hook[ci][st]; if (n) { brass(n, .018); marimba(n, .04); }
-          if (bar === 13 && st >= 12) conga(300 + (st - 12) * 40, .14);
+          if (st % 2 === 1) arpN(ch[(st >> 1) % 3] * 4, .009);
+          const n = hook[ci][st]; if (n) { lead(n, .3, .036); harm(n, .3, .02); }
+        }
+        if (inter) {
+          const n = fanfare[st]; if (n) lead(n * (bar === 15 ? 1 : 1), .22, .034);
+          if (st % 4 === 0) pad(ch, .4, .008);
+          if (st % 2 === 1) arpN(ch[(st >> 1) % 3] * 2, .01);
         }
         bgmStep++;
-      }, 150);
+      }, 100);
     } else {
       // 闖關音樂：較快的 8-bit 旋律加鼓
       const mel = [659, 0, 784, 880, 784, 0, 659, 587, 523, 0, 587, 659, 587, 0, 494, 523, 587, 0, 698, 880, 784, 0, 659, 587, 659, 784, 880, 988, 1047, 0, 0, 0];
@@ -221,7 +213,7 @@ var SFX = (function () {
     miss() { api.wrong(); setTimeout(() => api.ouch(), 200); },
     win() { if (!on) return; [523, 659, 784, 1046, 784, 1046].forEach((f, i) => tone(f, i > 3 ? .4 : .16, 'square', .07, null, i * .13)); [0, .3, .55].forEach(d => api.coin(.8 + d)); },
     tap() { if (!on) return; tone(700, .05, 'triangle', .05); },
-    // 背景音樂：menu＝EDM、battle＝闖關音樂
+    // 背景音樂：menu＝電玩熱血主題、battle＝闖關音樂
     playMusic(name) { want = name; if (cur === name && bgmTimer) return; api.bgmStop(); cur = name; if (!name || !on || !music || !unlocked) return; startTrack(name); },
     bgmStart() { api.playMusic(want || 'battle'); },
     bgmStop() { if (bgmTimer) { clearInterval(bgmTimer); bgmTimer = null; } cur = null; },
@@ -238,6 +230,7 @@ var SFX = (function () {
       [2.9, 3.1, 3.3].forEach(t => api.coin(t));
       setTimeout(() => { if (want && !bgmTimer) api.playMusic(want); }, 3800);
     },
+    urgent(x) { if (!on) return; const v = .35 + x * .4; tone(140, .18, 'sine', v, 38); noise(.02, v * .5, 'highpass', 3000); tone(55, .22, 'square', .05 + x * .06, 45); if (x > .45) noise(.08, .1 + x * .15, 'bandpass', 1700, .02, .8); if (x > .75) tone(880 + x * 400, .05, 'square', .04, null, .04); },
     die() { if (!on) return; [523, 466, 415, 349, 262].forEach((f, i) => tone(f, .22, 'square', .08, null, i * .14)); tone(110, .9, 'sawtooth', .08, 40, .7); voice(300, 150, .6, .3, .45); },
     launch() { if (!on) return; noise(.35, .12, 'bandpass', 2500, 0, 2); tone(300, .35, 'sawtooth', .04, 1200); },
     explode(delay) { if (!on) return; const d = delay || 0; noise(.7, .7, 'lowpass', 900, d); noise(.25, .35, 'lowpass', 3000, d); tone(90, .6, 'sine', .6, 30, d); tone(60, .8, 'triangle', .3, 25, d + .05); }
