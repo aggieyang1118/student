@@ -1,0 +1,2330 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>三年級平板考卷</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#222;--line:#e8a87c;--accent:#2f6fb5;--bg:#faf8f3;--red:#d33;--green:#2e8b57}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;background:var(--bg);color:var(--ink)}
+header{padding:10px 16px;background:#fff;border-bottom:1px solid #ddd;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:5;min-height:58px}
+h1{font-size:18px;margin:0;flex:1}
+.score{font-size:18px;font-weight:700;color:var(--red)}
+button{font:inherit;font-size:16px;padding:8px 16px;border-radius:8px;border:1px solid #bbb;background:#fff;color:var(--ink);cursor:pointer;touch-action:manipulation}
+button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+#back{display:none;padding:8px 12px}
+main{padding:16px;max-width:1000px;margin:0 auto}
+.hint{color:#666;font-size:14px;line-height:1.6;margin:0 0 12px}
+/* home */
+.grade{display:inline-block;background:var(--accent);color:#fff;border-radius:20px;padding:4px 14px;font-size:15px;margin-bottom:14px}
+.subjects{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px}
+.subj{background:#fff;border:1px solid #ddd;border-radius:14px;padding:18px;text-align:left;display:flex;align-items:center;gap:14px;font-size:20px}
+.subj .ic{width:52px;height:52px;border-radius:12px;color:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;flex:none}
+.subj small{display:block;font-size:13px;color:#888;margin-top:2px}
+.exams{display:flex;flex-direction:column;gap:10px}
+.examrow{background:#fff;border:1px solid #ddd;border-radius:12px;padding:16px;text-align:left;display:flex;align-items:center;gap:12px}
+.examrow b{flex:1;font-weight:500}
+.examrow .last{font-size:14px;color:var(--red)}
+.empty{color:#888;padding:20px;text-align:center;background:#fff;border:1px dashed #ccc;border-radius:12px}
+/* kids */
+.kids{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
+.kid-card{background:#fff;border:1px solid #ddd;border-radius:16px;padding:20px 12px;display:flex;flex-direction:column;align-items:center;gap:10px;font-size:20px}
+.avatar{width:72px;height:72px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:700}
+.kid-card small{font-size:14px;color:#888}
+.kid-card.add{border-style:dashed;color:#888;justify-content:center}
+.kid-card.add .avatar{background:#eee;color:#999}
+.addform{background:#fff;border:1px solid #ddd;border-radius:12px;padding:16px;margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.addform input,.addform select{font:inherit;font-size:18px;padding:8px 10px;border:1px solid #bbb;border-radius:8px}
+.addform input{flex:1;min-width:160px}
+.status{color:#888;font-size:14px;margin-top:14px}
+.status.warn{color:#b26a00}
+.badge{font-size:15px;padding:4px 12px;border-radius:14px;white-space:nowrap}
+.badge.done{background:#fdecea;color:var(--red);font-weight:700}
+.badge.todo{background:#eee;color:#888}
+.examrow .meta{font-size:13px;color:#888;font-weight:400;display:block;margin-top:2px}
+.examrow .go{font-size:14px;color:var(--accent);white-space:nowrap}
+/* login & parent */
+.login{max-width:380px;margin:30px auto;background:#fff;border:1px solid #ddd;border-radius:16px;padding:26px 24px;display:flex;flex-direction:column;gap:14px}
+.login h2{margin:0;font-size:22px;text-align:center}
+.login label{font-size:15px;color:#555;display:flex;flex-direction:column;gap:6px}
+.login input,.login select{font:inherit;font-size:20px;padding:10px 12px;border:1px solid #bbb;border-radius:10px}
+.login input.pin{letter-spacing:10px;text-align:center}
+.login .primary{font-size:18px;padding:12px}
+.err{color:var(--red);font-size:15px;min-height:20px;text-align:center}
+.parentlink{text-align:center;margin-top:8px}
+.parentlink button{border:none;background:none;color:#888;font-size:14px;text-decoration:underline}
+.plist{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.prow{background:#fff;border:1px solid #ddd;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.prow .avatar{width:44px;height:44px;font-size:20px}
+.prow b{flex:1;font-weight:500;font-size:18px}
+.prow b small{display:block;font-size:13px;color:#888;font-weight:400}
+.prow button{font-size:14px;padding:6px 12px}
+.prow button.danger{color:var(--red);border-color:var(--red)}
+.prow .pinedit{display:flex;gap:6px;width:100%}
+.prow .pinedit input{font:inherit;font-size:18px;padding:6px 10px;border:1px solid #bbb;border-radius:8px;width:140px;letter-spacing:6px}
+h3{font-size:17px;margin:20px 0 10px}
+.tabs{display:flex;gap:8px;margin-bottom:6px}
+.tabs button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.nopin{color:#b26a00}
+.cat{background:#fff;border:1px solid #ddd;border-radius:12px;margin-bottom:10px;overflow:hidden}
+.cathead{display:flex;align-items:center;gap:12px;padding:12px 14px}
+.cathead .ic{width:40px;height:40px;border-radius:10px;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;flex:none}
+.cathead b{flex:1;font-size:18px;font-weight:500}
+.cathead b small{display:block;font-size:13px;color:#888;font-weight:400}
+.catexams{border-top:1px solid #eee;padding:6px 14px 10px 66px}
+.catex{display:flex;align-items:center;gap:10px;padding:6px 0;font-size:16px}
+.catex span{flex:1}
+.catex small{color:#888;font-size:13px}
+.cat.off .cathead b{color:#aaa}
+.cat.off .catexams{opacity:.45}
+.switch{position:relative;width:52px;height:30px;flex:none;padding:0;border-radius:15px;background:#ccc;border:none}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:left .15s}
+.switch.on{background:var(--green)}
+.switch.on::after{left:25px}
+.switch.sm{width:44px;height:26px}
+.switch.sm::after{width:20px;height:20px}
+.switch.sm.on::after{left:21px}
+/* exam */
+.sec{background:#fff;border:1px solid #ddd;border-radius:10px;padding:16px 18px;margin-bottom:14px}
+.sec h2{font-size:18px;margin:0 0 12px}
+.sec h2 small{font-weight:400;color:#888;font-size:14px}
+.q{position:relative;padding:10px 0 10px 34px;border-top:1px dashed #eee;font-size:19px;line-height:1.7}
+.q:first-of-type{border-top:0}
+.q.is-ok::before,.q.is-ng::before{position:absolute;left:0;top:8px;font-size:26px;line-height:1;color:var(--red);font-weight:700}
+.q.is-ok::before{content:"○"}
+.q.is-ng::before{content:"✕"}
+.opts{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.opt{font-size:18px;padding:8px 14px}
+.opt.sel{background:#e7f0fb;border-color:var(--accent);border-width:2px}
+.opt.right{background:#e6f4ea;border-color:var(--green);border-width:2px}
+.opt.wrong{background:#fdecea;border-color:var(--red);border-width:2px}
+input.ans{font:inherit;font-size:20px;width:110px;padding:4px 8px;border:none;border-bottom:2px solid #999;text-align:center;background:#fffaf5}
+input.ans:disabled{color:var(--ink)}
+input.ans.right{border-color:var(--green)}
+input.ans.wrong{border-color:var(--red)}
+.fixtxt{color:var(--red);font-size:16px;margin-left:8px}
+.work{margin:8px 0}
+.worklbl{font-size:14px;color:#888;display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.worklbl button{font-size:14px;padding:4px 10px}
+.work canvas{width:100%;height:200px;display:block;border:1px solid #ddd;border-radius:6px;touch-action:none;
+ background-color:#fff;background-image:linear-gradient(#eef2f7 1px,transparent 1px),linear-gradient(90deg,#eef2f7 1px,transparent 1px);background-size:24px 24px}
+.submitbar{text-align:center;margin:18px 0 40px}
+.submitbar button{font-size:18px;padding:12px 40px}
+/* vertical 國語 paper */
+.paper{writing-mode:vertical-rl;font-family:"Noto Serif TC","PMingLiU","Songti TC",serif;font-size:26px;line-height:2;height:600px;overflow-x:auto;letter-spacing:3px}
+.paper p{margin:0 0 0 22px}
+.box{display:inline-flex;writing-mode:horizontal-tb;vertical-align:middle;margin:6px 0;border:1.5px solid var(--line);background:#fff;letter-spacing:0;position:relative;cursor:pointer}
+.box.given{cursor:default}
+.cell{width:58px;height:58px;display:flex;align-items:center;justify-content:center;font-size:40px;line-height:1}
+.cell img{width:100%;height:100%;display:block}
+.box:not(.given) .cell:empty{background:#fffaf5}
+.zy{width:22px;border-left:1px solid var(--line);writing-mode:vertical-rl;font-family:"PingFang TC","Microsoft JhengHei",sans-serif;font-size:13px;line-height:22px;display:flex;align-items:center;justify-content:center;letter-spacing:0}
+.box.ok::after,.box.ng::after{position:absolute;display:flex;align-items:center;justify-content:center;color:var(--red);pointer-events:none;font-family:sans-serif}
+.box.ok::after{content:"";border:3px solid var(--red);border-radius:50%;inset:6px 28px 6px 6px}
+.box.ng::after{content:"✕";font-size:46px;opacity:.75;inset:0 22px 0 0}
+.box .fix{position:absolute;top:-10px;left:-14px;background:var(--red);color:#fff;font-size:15px;line-height:1;padding:3px 4px;border-radius:4px;font-family:sans-serif;writing-mode:horizontal-tb;z-index:1}
+/* writing pad */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:10}
+.modal.show{display:flex}
+.pad{background:#fff;border-radius:14px;padding:16px 18px;text-align:center;max-width:94vw}
+.padtop{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:12px}
+.padzy{font-size:26px;font-weight:700;letter-spacing:2px}
+.padctx{font-size:14px;color:#777}
+.cvwrap{width:min(78vw,60vh,380px);height:min(78vw,60vh,380px);border:2px solid var(--line);margin:0 auto;
+ background:
+  linear-gradient(to right,transparent calc(50% - .5px),#f4d2b8 calc(50% - .5px),#f4d2b8 calc(50% + .5px),transparent calc(50% + .5px)),
+  linear-gradient(to bottom,transparent calc(50% - .5px),#f4d2b8 calc(50% - .5px),#f4d2b8 calc(50% + .5px),transparent calc(50% + .5px)),#fff}
+#cv{width:100%;height:100%;display:block;touch-action:none}
+.padbtns{display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+/* parent grading */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.card{background:#fff;border:1px solid #ddd;border-radius:10px;padding:10px;display:flex;align-items:center;gap:10px}
+.kid{width:64px;height:64px;border:1px solid var(--line);flex:none;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:13px}
+.kid img{width:100%;height:100%}
+.ansbox{flex:1;font-size:13px;color:#777}
+.ansbox b{display:block;font-size:30px;color:var(--ink);font-family:"Noto Serif TC","PMingLiU",serif;font-weight:400}
+.mk{display:flex;flex-direction:column;gap:6px}
+.mk button{padding:4px 10px;font-size:18px}
+.mk button.on{background:var(--red);color:#fff;border-color:var(--red)}
+
+/* new types */
+.paper{width:100%;max-width:100%;text-orientation:upright}
+.minis{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:14px;direction:rtl}
+.minis > *{direction:ltr}
+.paper.mini{height:auto;width:auto;overflow:visible;padding:4px 0}
+.paper.mini p{margin:0}
+.minicard{display:flex;flex-direction:column;align-items:center;gap:6px;background:#fffdf8;border:1.5px solid #e9dccb;border-radius:12px;padding:8px 6px 10px;min-width:0;overflow:hidden}
+.minicard .paper.mini{max-width:100%;height:auto;overflow:visible}
+.mininum{font-size:18px;font-weight:700;color:#fff;background:var(--accent);border-radius:12px;padding:1px 10px;font-family:sans-serif}
+.zy img{width:100%;height:100%;object-fit:contain;display:block}
+.box.askzy .zy{background:#fffaf5;cursor:pointer}
+.box.askzy{cursor:pointer}
+.hboxes{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px}
+.hbox{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:14px;color:#888}
+.box.nozy .zy{display:none}
+.box.nozy.ok::after{inset:7px}
+.box.nozy.ng::after{inset:0}
+.qt{white-space:pre-line}
+.passage{white-space:pre-line;font-size:22px;line-height:1.9;background:#fbf8f1;border-radius:10px;padding:16px 20px;font-family:"Noto Serif TC","PMingLiU",serif}
+.passage img{max-width:100%;max-height:70vh;display:block;margin:0 auto;border-radius:6px}
+.opt.multi::before{content:"□ ";}
+.opt.multi.sel::before{content:"☑ ";}
+.card.wide{grid-column:1/-1;align-items:flex-start}
+.card.wide .kid{width:auto;flex:1;height:auto;min-height:90px;border-color:#ddd}
+.card.wide .kid img{width:100%;height:auto}
+.card.wide .ansbox{flex:0 0 32%;font-size:15px;color:#555}
+.card.wide .ansbox b{font-size:15px;font-family:inherit;color:#888;font-weight:400}
+.ansbox.zy b{font-size:26px}
+/* words practice */
+.kindtitle{font-size:20px;margin:22px 0 12px;display:flex;align-items:center;gap:10px}
+.kindtitle:first-child{margin-top:4px}
+.wp{display:flex;flex-direction:column;align-items:center;gap:14px}
+.wpbar{width:100%;display:flex;align-items:center;gap:12px;font-size:17px;color:#666}
+.wpbar .track{flex:1;height:10px;background:#eee;border-radius:5px;overflow:hidden}
+.wpbar .fill{height:100%;background:var(--green);transition:width .3s}
+.wpstep{font-size:18px;font-weight:700;padding:6px 16px;border-radius:16px;background:#e7f0fb;color:var(--accent)}
+.wpstep.s2{background:#fdf1e3;color:#b26a00}
+.wpq{display:flex;align-items:center;gap:22px}
+.wpzy{writing-mode:vertical-rl;font-size:34px;font-weight:700;letter-spacing:4px;font-family:"PingFang TC","Microsoft JhengHei",sans-serif}
+.wpword{font-size:40px;font-family:"BiauKai","DFKai-SB","Kaiti TC","STKaiti","Noto Serif TC",serif;letter-spacing:6px}
+.wpword .blank{display:inline-block;width:1.1em;border-bottom:3px solid #999;margin:0 2px}
+.wpbox{position:relative;width:min(80vw,52vh,500px);height:min(80vw,52vh,500px);border:3px solid var(--line);background:
+  linear-gradient(to right,transparent calc(50% - .5px),#f4d2b8 calc(50% - .5px),#f4d2b8 calc(50% + .5px),transparent calc(50% + .5px)),
+  linear-gradient(to bottom,transparent calc(50% - .5px),#f4d2b8 calc(50% - .5px),#f4d2b8 calc(50% + .5px),transparent calc(50% + .5px)),#fff}
+.wpbox .ghost{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:min(64vw,42vh,400px);line-height:1;color:#000;opacity:.13;font-family:"BiauKai","DFKai-SB","Kaiti TC","STKaiti","Noto Serif TC",serif;pointer-events:none}
+.wpbox canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+.wpbtns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.wpbtns button{font-size:20px;padding:12px 24px;min-height:58px}
+.wpcheck{display:flex;align-items:center;gap:26px;font-size:18px;color:#666}
+.wpcheck .ans{font-size:110px;line-height:1;color:var(--ink);font-family:"BiauKai","DFKai-SB","Kaiti TC","STKaiti","Noto Serif TC",serif}
+.wpcheck img{width:120px;height:120px;border:2px solid var(--line);background:#fff}
+.wpdone{text-align:center;font-size:22px;line-height:1.8}
+.wpdone .big{font-size:48px}
+.wpdone .chars{font-size:40px;letter-spacing:10px;color:var(--red);font-family:"BiauKai","DFKai-SB","Kaiti TC","STKaiti","Noto Serif TC",serif}
+.wppts{font-weight:700;color:#b26a00;font-size:19px;white-space:nowrap}
+.wpscore{font-size:30px;font-weight:700;color:#b26a00}
+.wpflash{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);font-size:56px;font-weight:800;color:#e08a00;text-shadow:0 2px 0 #fff,0 0 12px #fff;pointer-events:none;z-index:50;animation:wpup .9s ease-out forwards}
+@keyframes wpup{from{opacity:1;transform:translate(-50%,-30%) scale(.8)}to{opacity:0;transform:translate(-50%,-90%) scale(1.15)}}
+.mistbox{background:#fff;border:1px solid #f0c9c9;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:14px;align-items:stretch}
+.mistgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px}
+.mistch{border:1.5px solid #f3d6d6;background:#fff8f8;border-radius:12px;padding:8px;text-align:center}
+.mistch .mc{font-size:46px;line-height:1.1;font-family:"BiauKai","DFKai-SB","Kaiti TC","STKaiti","Noto Serif TC",serif}
+.mistch .mz{font-size:15px;color:#555}
+.mistch .mw{font-size:16px;color:#333}
+.mistch .mn{font-size:14px;color:var(--red);font-weight:700;margin-top:2px}
+.mistbox .primary{font-size:20px;min-height:58px}
+.qimg{display:block;max-width:100%;max-height:220px;margin:8px 0;border-radius:6px}
+.optlist{display:grid;max-width:760px;gap:6px 18px;font-size:21px;line-height:1.5;color:#333;margin:6px 0 4px}
+.optitem{display:flex;gap:6px;align-items:baseline;min-width:0;overflow-wrap:anywhere}
+.optitem b{flex:none;color:var(--accent)}
+.qt{overflow-wrap:anywhere}
+.opts.codes{gap:14px}
+.opts.codes .opt{min-width:70px;min-height:62px;font-size:30px;padding:4px 16px;border-radius:14px;font-weight:700}
+/* ===== 平板尺寸（iPad 等 10～13 吋，直放橫放都可）：字更大、按鈕更好點 ===== */
+html{-webkit-text-size-adjust:100%}
+body{-webkit-tap-highlight-color:transparent;overscroll-behavior-y:none}
+button,.box,.subj,.examrow,.kid-card{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+canvas{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+button{font-size:18px;min-height:48px;padding:10px 20px;border-radius:12px}
+header{min-height:72px;padding:12px 24px;gap:14px}
+h1{font-size:22px}
+#back{font-size:18px;padding:10px 18px}
+.score{font-size:22px}
+main{padding:24px 28px;max-width:1200px}
+.hint{font-size:16px}
+.status{font-size:15px}
+.err{font-size:17px}
+/* 登入 */
+.login{max-width:500px;margin:6vh auto 0;padding:34px 32px;gap:18px;border-radius:20px}
+.login h2{font-size:28px}
+.login label{font-size:17px}
+.login input,.login select{font-size:26px;padding:14px 16px;border-radius:12px}
+.login input.pin{letter-spacing:16px}
+.login .primary{font-size:22px;padding:16px;min-height:60px}
+.parentlink button{font-size:16px;min-height:44px}
+/* 科目 */
+.subjects{grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px}
+.subj{padding:26px 22px;font-size:26px;border-radius:18px;gap:18px}
+.subj .ic{width:72px;height:72px;font-size:34px;border-radius:16px}
+.subj small{font-size:16px;margin-top:4px}
+/* 考卷列表 */
+.exams{gap:14px}
+.examrow{padding:22px 24px;border-radius:16px;font-size:21px;min-height:84px}
+.examrow .meta{font-size:15px;margin-top:4px}
+.badge{font-size:19px;padding:6px 16px;border-radius:18px}
+.examrow .go{font-size:18px}
+.empty{font-size:18px;padding:30px}
+/* 作答 */
+.sec{padding:22px 26px;border-radius:14px;margin-bottom:18px}
+.sec h2{font-size:22px}
+.sec h2 small{font-size:16px}
+.q{font-size:23px;padding:14px 0 14px 44px;line-height:1.8}
+.q.is-ok::before,.q.is-ng::before{font-size:32px;top:12px}
+.opts{gap:12px;margin-top:10px}
+.opt{font-size:21px;padding:12px 22px;min-height:56px}
+input.ans{font-size:26px;width:150px;height:50px}
+.fixtxt{font-size:18px}
+.worklbl{font-size:16px}
+.worklbl button{font-size:16px;min-height:40px;padding:6px 14px}
+.work canvas{height:280px}
+.submitbar button{font-size:22px;padding:16px 60px;min-height:62px}
+/* 國語直式考卷：高度跟著螢幕 */
+.paper{height:max(520px,calc(100vh - 290px));font-size:30px}
+.cell{width:70px;height:70px;font-size:48px}
+.zy{width:26px;font-size:15px;line-height:26px}
+.box.ok::after{inset:7px 33px 7px 7px}
+.box.ng::after{font-size:56px;inset:0 26px 0 0}
+.box .fix{font-size:17px}
+/* 寫字板 */
+.pad{padding:22px 24px;border-radius:20px}
+.padzy{font-size:34px}
+.padctx{font-size:16px}
+.cvwrap{width:min(82vw,62vh,560px);height:min(82vw,62vh,560px)}
+.padbtns{gap:12px;margin-top:16px}
+.padbtns button{font-size:20px;padding:12px 24px;min-height:56px}
+/* 家長批改 */
+.cards{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.card{padding:14px;gap:12px}
+.kid{width:84px;height:84px}
+.ansbox{font-size:15px}
+.ansbox b{font-size:38px}
+.mk button{font-size:22px;min-height:46px;padding:4px 14px}
+/* 家長管理 */
+.tabs{gap:10px;margin-bottom:10px}
+.tabs button{font-size:19px;padding:10px 24px}
+h3{font-size:20px}
+.prow{padding:16px 18px;gap:12px}
+.prow .avatar{width:54px;height:54px;font-size:24px}
+.prow b{font-size:21px}
+.prow b small{font-size:15px}
+.prow button{font-size:16px;min-height:44px;padding:8px 16px}
+.cathead{padding:16px 18px;gap:14px}
+.cathead .ic{width:50px;height:50px;font-size:22px}
+.cathead b{font-size:21px}
+.cathead b small{font-size:15px}
+.catexams{padding:8px 18px 12px 82px}
+.catex{font-size:18px;padding:8px 0}
+.catex small{font-size:15px}
+.delbtn{font-size:15px;min-height:40px;padding:6px 14px;color:var(--red);border-color:#e6b0b0}
+.delbtn.armed{background:var(--red);color:#fff;border-color:var(--red)}
+.switch{width:62px;height:36px;min-height:0;border-radius:18px}
+.switch::after{width:30px;height:30px}
+.switch.on::after{left:29px}
+.switch.sm{width:54px;height:32px;min-height:0}
+.switch.sm::after{width:26px;height:26px}
+.switch.sm.on::after{left:25px}
+
+/* ================= 遊戲風格主題 ================= */
+:root{--ink:#1f2433;--outline:#1f2433;--sky1:#4fc3ff;--sky2:#a9e7ff;--grass:#7ed957;--accent:#2f80ed;--green:#25b04c;--red:#e5484d;--gold:#ffc83d}
+body{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;font-weight:700;color:var(--ink);
+  background:linear-gradient(180deg,var(--sky1) 0%,var(--sky2) 55%,#d6f6ff 100%) fixed;min-height:100vh}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+   radial-gradient(60px 26px at 12% 14%,#fff 98%,transparent),radial-gradient(44px 22px at 17% 11%,#fff 98%,transparent),
+   radial-gradient(70px 28px at 78% 9%,#fff 98%,transparent),radial-gradient(46px 22px at 84% 6%,#fff 98%,transparent),
+   radial-gradient(54px 22px at 55% 22%,rgba(255,255,255,.8) 98%,transparent),
+   linear-gradient(180deg,transparent 86%,#8bdc63 86%,#8bdc63 88%,#6cc24a 88%);
+  opacity:.9}
+header{background:rgba(31,36,51,.88);border-bottom:none;color:#fff;box-shadow:0 4px 0 rgba(0,0,0,.2);backdrop-filter:blur(6px)}
+h1{color:#fff;font-weight:900;letter-spacing:1px;display:flex;align-items:center;gap:10px}
+h1 .hdav{width:44px;height:44px;border-radius:12px;background:#fff;display:inline-flex;align-items:flex-end;justify-content:center;overflow:hidden;border:3px solid var(--gold);flex:none}
+h1 .hdav svg{width:40px;height:54px;margin-bottom:-12px}
+.score{color:var(--gold);font-weight:900;text-shadow:0 2px 0 rgba(0,0,0,.35)}
+button{font-family:inherit;font-weight:900;border:3px solid var(--outline);border-radius:14px;background:#fff;color:var(--ink);
+  box-shadow:0 5px 0 var(--outline);transition:transform .06s,box-shadow .06s;position:relative;top:0}
+button:active:not(:disabled){transform:translateY(4px);box-shadow:0 1px 0 var(--outline)}
+button:disabled{opacity:.6}
+button.primary{background:var(--green);color:#fff;border-color:var(--outline);text-shadow:0 2px 0 rgba(0,0,0,.25)}
+#back{background:var(--gold);color:var(--ink);border-color:#1f2433}
+.sec,.login,.examrow,.subj,.mistbox,.prow,.cat,.addform,.card,.empty,.minicard,.wpdone,.kid-hero{
+  border:4px solid var(--outline)!important;border-radius:20px!important;box-shadow:0 7px 0 rgba(31,36,51,.9)!important}
+.sec{background:#fff}
+.sec h2{font-weight:900;display:inline-block;background:var(--gold);padding:4px 14px;border-radius:12px;border:3px solid var(--outline);box-shadow:0 3px 0 var(--outline)}
+.sec h2 small{color:#5a4300}
+.hint{color:#34405c;font-weight:500}
+h3,.kindtitle{font-weight:900;color:#fff;text-shadow:0 3px 0 rgba(31,36,51,.55),0 0 2px #1f2433}
+.kindtitle small.hint{display:block;margin:2px 0 0;font-size:15px;color:#fff;text-shadow:0 2px 0 rgba(31,36,51,.5);font-weight:700}
+.empty{background:rgba(255,255,255,.9);color:#34405c}
+.status{color:#1f2433;background:rgba(255,255,255,.7);border-radius:10px;padding:6px 10px;display:inline-block}
+/* 登入 */
+.login{background:#fff;position:relative}
+.login h2{font-weight:900}
+.login input,.login select,.addform input,.addform select,input.ans{border:3px solid var(--outline);border-radius:12px;font-weight:700;background:#fffdf3}
+.login input:focus,input.ans:focus{outline:none;box-shadow:0 0 0 4px rgba(47,128,237,.35)}
+.parentlink button{box-shadow:none;border:none;background:transparent;color:#1f2433;text-decoration:underline}
+.logo{text-align:center;margin:3vh 0 0;font-weight:900;font-size:44px;color:#fff;letter-spacing:4px;
+  text-shadow:0 4px 0 #1f2433,3px 3px 0 #1f2433,-3px 3px 0 #1f2433,3px -1px 0 #1f2433,-3px -1px 0 #1f2433}
+.logo small{display:block;font-size:18px;letter-spacing:2px;text-shadow:0 2px 0 #1f2433}
+.login .bigav{display:flex;justify-content:center;margin:-6px 0 0}
+.login .bigav svg{width:120px;height:160px;filter:drop-shadow(0 6px 0 rgba(0,0,0,.18))}
+/* 選角色 */
+.avgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px}
+.avcard{display:flex;flex-direction:column;align-items:center;padding:12px 8px 10px;background:linear-gradient(180deg,#e9f7ff,#fff);border-radius:18px}
+.avcard svg{width:100px;height:134px}
+.avcard span{font-size:20px;margin-top:4px}
+.avcard.sel{background:linear-gradient(180deg,#fff3c4,#ffe07a);border-color:#1f2433;transform:translateY(-4px)}
+.avcard.sel::after{content:"✔";position:absolute;top:-12px;right:-12px;width:36px;height:36px;border-radius:50%;background:var(--green);color:#fff;border:3px solid #1f2433;display:flex;align-items:center;justify-content:center;font-size:20px}
+.avpick-title{font-size:30px;font-weight:900;color:#fff;text-align:center;margin:6px 0 16px;text-shadow:0 3px 0 #1f2433,2px 2px 0 #1f2433,-2px 2px 0 #1f2433}
+.avpick-go{display:flex;justify-content:center;margin:22px 0 40px}
+.avpick-go button{font-size:24px;padding:14px 50px;min-height:66px}
+/* 小朋友首頁 */
+.kid-hero{display:flex;align-items:center;gap:18px;background:linear-gradient(135deg,#fff 0%,#fff6d6 100%);padding:14px 20px;margin-bottom:22px}
+.kid-hero .heroav{width:110px;height:120px;display:flex;align-items:flex-end;justify-content:center;background:#bfe9ff;border-radius:16px;border:3px solid #1f2433;overflow:hidden;flex:none}
+.kid-hero .heroav svg{width:96px;height:128px;margin-bottom:-14px}
+.kid-hero .info{flex:1}
+.kid-hero .nm{font-size:30px;font-weight:900}
+.kid-hero .stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.chip{background:#1f2433;color:#fff;border-radius:999px;padding:4px 14px;font-size:17px}
+.chip.gold{background:var(--gold);color:#1f2433;border:2px solid #1f2433}
+.kid-hero button{font-size:16px;padding:8px 14px;min-height:44px}
+.subjects{gap:20px}
+.subj{color:#fff;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:24px 14px 20px;font-weight:900;text-shadow:0 3px 0 rgba(0,0,0,.25)}
+.subj .ic{width:84px;height:84px;font-size:42px;border-radius:18px;background:#fff!important;border:4px solid #1f2433;box-shadow:0 4px 0 rgba(0,0,0,.25);text-shadow:none}
+.subj small{color:#fff;font-weight:700;background:rgba(0,0,0,.22);padding:3px 12px;border-radius:999px;text-shadow:none}
+.subj .bar{width:80%;height:12px;background:rgba(0,0,0,.25);border-radius:6px;overflow:hidden;border:2px solid rgba(31,36,51,.6)}
+.subj .bar i{display:block;height:100%;background:var(--gold)}
+/* 關卡列表 */
+.examrow{background:#fff;gap:16px}
+.examrow::before{content:attr(data-n);flex:none;width:52px;height:52px;border-radius:14px;background:var(--accent);color:#fff;font-weight:900;font-size:22px;display:flex;align-items:center;justify-content:center;border:3px solid #1f2433;box-shadow:0 3px 0 #1f2433}
+.examrow.cleared::before{background:var(--green);content:"★"}
+.examrow b{font-weight:900}
+.badge{border:3px solid #1f2433;font-weight:900}
+.badge.done{background:var(--gold);color:#1f2433}
+.badge.todo{background:#e9eef5;color:#5a6680}
+.examrow .go{background:var(--green);color:#fff;border:3px solid #1f2433;border-radius:12px;padding:6px 12px;box-shadow:0 3px 0 #1f2433;font-weight:900;text-shadow:0 1px 0 rgba(0,0,0,.25)}
+/* 作答 */
+.opt{border-width:3px}
+.opt.sel{background:#cfe5ff;border-color:#1f2433;border-width:3px;transform:translateY(3px);box-shadow:0 2px 0 #1f2433}
+.opt.right{background:#b9f0c6;border-color:#1f2433;border-width:3px}
+.opt.wrong{background:#ffc9c9;border-color:#1f2433;border-width:3px}
+.q.is-ok::before{color:var(--green)}
+.passage{border:3px dashed #c9b88a}
+.submitbar button.primary{font-size:26px;padding:16px 70px}
+.pad{border:4px solid #1f2433;border-radius:22px;box-shadow:0 8px 0 rgba(0,0,0,.4)}
+.cvwrap,.wpbox{border-color:#1f2433!important;border-radius:10px}
+/* 生字練習 */
+.wpstep{border:3px solid #1f2433;box-shadow:0 3px 0 #1f2433}
+.wpbar .track{border:3px solid #1f2433;height:18px;border-radius:9px;background:#fff}
+.wpbar .fill{background:linear-gradient(90deg,#7ed957,#25b04c)}
+.wpbar{color:#1f2433;font-weight:900}
+.wppts{background:var(--gold);border:3px solid #1f2433;border-radius:999px;padding:2px 12px;color:#1f2433!important}
+.wpq{background:#fff;border:4px solid #1f2433;border-radius:18px;padding:8px 22px;box-shadow:0 5px 0 rgba(31,36,51,.9)}
+.wpdone{background:#fff;padding:24px}
+.wpflash{color:var(--gold);-webkit-text-stroke:3px #1f2433;text-shadow:0 5px 0 #1f2433}
+/* 慶祝 */
+.confetti{position:fixed;top:-20px;width:14px;height:14px;z-index:60;pointer-events:none;border:2px solid #1f2433;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
+.levelup{position:fixed;left:50%;top:38%;transform:translate(-50%,-50%);z-index:61;background:#fff;border:5px solid #1f2433;border-radius:24px;box-shadow:0 10px 0 #1f2433;padding:22px 40px;text-align:center;animation:pop .35s ease-out}
+.levelup .big{white-space:nowrap;font-size:40px;font-weight:900;color:#1f2433}
+.levelup .sc{font-size:64px;font-weight:900;color:var(--gold);-webkit-text-stroke:3px #1f2433}
+@keyframes pop{from{transform:translate(-50%,-50%) scale(.5);opacity:0}}
+/* 家長管理沿用但較素 */
+.tabs button.on{background:var(--accent);color:#fff}
+.prow .avatar{background:#bfe9ff!important;border:3px solid #1f2433;overflow:hidden;align-items:flex-end}
+.prow .avatar svg{width:44px;height:58px;margin-bottom:-12px}
+
+/* ================= 戰場模式 ================= */
+body{background:linear-gradient(180deg,#241a4d 0%,#4a2f7a 30%,#c2557a 62%,#ff9a5a 80%,#ffcf7a 90%) fixed}
+body::before{background:
+  radial-gradient(2px 2px at 10% 8%,#fff 99%,transparent),radial-gradient(2px 2px at 30% 14%,#fff 99%,transparent),radial-gradient(1.5px 1.5px at 52% 6%,#fff 99%,transparent),
+  radial-gradient(2px 2px at 70% 12%,#fff 99%,transparent),radial-gradient(1.5px 1.5px at 88% 4%,#fff 99%,transparent),radial-gradient(2px 2px at 92% 20%,#fff 99%,transparent),
+  linear-gradient(170deg,transparent 78%,#3b2a5c 78%,#3b2a5c 84%,transparent 84%),
+  linear-gradient(190deg,transparent 80%,#4b3570 80%,#4b3570 86%,transparent 86%),
+  linear-gradient(180deg,transparent 88%,#6b4a2b 88%,#6b4a2b 90%,#4e3520 90%);opacity:1}
+.logo{color:#ffd36e}
+.logo small{color:#fff}
+.avpick-title,h3,.kindtitle{color:#ffd36e}
+.arena{position:sticky;top:72px;z-index:4;display:flex;align-items:center;gap:10px;margin:-6px 0 18px;padding:10px 14px;
+  background:linear-gradient(180deg,rgba(31,24,64,.95),rgba(58,36,96,.95));border:4px solid #1f2433;border-radius:20px;box-shadow:0 7px 0 rgba(0,0,0,.45);color:#fff}
+.fighter{flex:1;display:flex;align-items:center;gap:10px;min-width:0}
+.fighter.foe{justify-content:flex-end;text-align:right}
+.fighter .sprite{flex:none;width:76px;height:84px;display:flex;align-items:flex-end;justify-content:center;filter:drop-shadow(0 5px 0 rgba(0,0,0,.35))}
+.fighter.me .sprite svg{width:62px;height:83px}
+.fighter.foe .sprite svg{width:82px;height:82px}
+.fighter .stat{min-width:0;flex:1}
+.fighter .stat b{display:block;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#ffd36e}
+.hearts{font-size:18px;letter-spacing:1px}.hearts .lost{opacity:.5}
+.hpbar{position:relative;height:22px;background:#2a1c45;border:3px solid #000;border-radius:11px;overflow:hidden;margin-top:4px}
+.hpbar i{position:absolute;inset:0 auto 0 0;background:linear-gradient(180deg,#7cf06a,#25b04c);transition:width .4s ease-out}
+.hpbar i.mid{background:linear-gradient(180deg,#ffe066,#f2b400)}
+.hpbar i.low{background:linear-gradient(180deg,#ff7a7a,#d6303a)}
+.hpbar span{position:relative;font-size:13px;font-weight:900;display:block;text-align:center;line-height:16px;text-shadow:0 1px 0 #000}
+.vs{flex:none;display:flex;flex-direction:column;align-items:center;gap:4px;width:84px}
+.vsx{font-size:28px;font-weight:900;color:#ff5a5a;-webkit-text-stroke:2px #000;font-style:italic}
+.combo{font-size:15px;font-weight:900;color:#ffd36e;min-height:20px;transform:scale(.6);opacity:0;transition:.2s}
+.combo.show{transform:scale(1.15);opacity:1}
+.sfxbtn{font-size:18px;min-height:0;padding:2px 8px;border-width:2px;box-shadow:0 2px 0 #1f2433;border-radius:10px}
+.lunge{animation:lunge .32s ease-out}.lunge-l{animation:lungel .32s ease-out}
+@keyframes lunge{40%{transform:translateX(26px) scale(1.08)}}
+@keyframes lungel{40%{transform:translateX(-26px) scale(1.08)}}
+.hurt{animation:hurt .45s}
+@keyframes hurt{0%,100%{filter:none;transform:none}20%{filter:brightness(2.2) drop-shadow(0 0 6px #fff);transform:translateX(-6px) rotate(-4deg)}50%{transform:translateX(6px) rotate(3deg)}70%{filter:brightness(1.6)}}
+.sprite.dead{animation:die .9s forwards}
+@keyframes die{30%{transform:scale(1.2) rotate(-8deg)}100%{transform:translateY(20px) scale(.4) rotate(30deg);opacity:0}}
+.shake{animation:shake .35s}
+@keyframes shake{20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+.dmg{position:fixed;z-index:70;pointer-events:none;transform:translateX(-50%);font-size:30px;font-weight:900;color:#fff;-webkit-text-stroke:2px #1f2433;text-shadow:0 3px 0 #1f2433;animation:dmg .9s ease-out forwards;white-space:nowrap}
+.dmg.crit{color:#ffd36e;font-size:38px}.dmg.bad{color:#ff6b6b}.dmg.ko{color:#ff5a5a;font-size:44px}
+@keyframes dmg{0%{opacity:0;margin-top:10px}15%{opacity:1}100%{opacity:0;margin-top:-60px}}
+.bolt{position:fixed;z-index:69;pointer-events:none;font-size:34px;transition:transform .35s ease-in,opacity .35s;margin:-20px 0 0 -14px}
+.opt.locked{pointer-events:none}
+.subj .ic{width:96px!important;height:96px!important;background:#fff!important;display:flex;align-items:center;justify-content:center;padding:4px}
+.subj .ic svg{width:84px;height:84px}
+.wpbar{color:#fff!important;text-shadow:0 2px 0 #1f2433}
+.subj .boss{font-size:14px;color:#fff;background:rgba(0,0,0,.3);padding:2px 10px;border-radius:999px;text-shadow:none}
+@media (max-width:600px){.arena{top:64px}.fighter .sprite{width:56px;height:64px}.fighter.foe .sprite svg{width:60px;height:60px}.fighter.me .sprite svg{width:46px;height:62px}.vs{width:60px}}
+
+.parentlink button{color:#fff!important;text-shadow:0 2px 0 #1f2433}
+.loginsel{margin:18px auto 0;max-width:900px}
+.step{display:inline-block;font-size:20px;font-weight:900;color:#1f2433;background:#ffd36e;border:3px solid #1f2433;border-radius:12px;padding:3px 14px;box-shadow:0 3px 0 #1f2433;margin-bottom:12px}
+.avgrid.mini{grid-template-columns:repeat(6,1fr);gap:10px}
+.avgrid.mini .avcard{padding:6px 2px 6px;border-radius:14px}
+.avgrid.mini .avcard svg{width:70px;height:94px}
+.avgrid.mini .avcard span{font-size:15px;margin-top:2px}
+.login{margin-top:22px}
+@media (max-width:700px){.avgrid.mini{grid-template-columns:repeat(4,1fr)}}
+
+/* ===== 數字鍵盤／直式／乘法闖關 ===== */
+input.ans.num{cursor:pointer;caret-color:transparent}
+.kfocus{outline:4px solid #ffc83d!important;outline-offset:2px;background:#fff6cf!important}
+.numkey{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(31,24,64,.97);border-top:4px solid #1f2433;padding:12px 14px calc(12px + env(safe-area-inset-bottom));transform:translateY(110%);transition:transform .18s}
+.numkey.show{transform:none}
+.nkrow,.dpad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:520px;margin:0 auto}
+.nkrow button,.dpad button{font-size:30px;min-height:62px;border-radius:14px}
+.nkrow button.bs,.dpad button.bs{background:#ffe0e0}
+body.nkopen main{padding-bottom:320px}
+.ansline{font-size:22px;margin-top:6px}
+.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
+.vq{border:3px solid #e5e0d0!important;border-radius:14px;padding:10px 12px 12px!important;background:#fffdf6;min-width:0;overflow:hidden}
+.vq .fixtxt{display:block;text-align:center;margin:4px 0 0}
+.vq .qt{font-size:18px;color:#777}
+.vtable{display:block;width:max-content;max-width:100%;margin:2px auto 4px;font-family:Menlo,Consolas,"Courier New",monospace;font-size:30px;font-weight:900;line-height:1}
+.vrow{display:grid;grid-template-columns:repeat(var(--w),42px);height:44px;align-items:center}
+.vrow .vc{display:flex;align-items:center;justify-content:center;height:100%}
+.vrow.carry{height:30px}
+.vrow.under{border-bottom:4px solid #1f2433}
+.vmini{width:26px;height:24px;border:2px dashed #b9c2d3;border-radius:6px;font-size:16px;display:flex;align-items:center;justify-content:center;color:#d6303a;cursor:pointer}
+.vrow.ansrow{height:56px}
+.dcell{width:38px;height:46px;border:3px solid #1f2433;border-radius:8px;background:#fffdf3;display:flex;align-items:center;justify-content:center;font-size:32px;cursor:pointer}
+.dcell.right{background:#b9f0c6}.dcell.wrong{background:#ffc9c9}.dcell.locked{pointer-events:none}
+.vq.is-ok::before,.vq.is-ng::before{left:auto;right:10px;top:8px}
+.drill{display:flex;flex-direction:column;align-items:center;gap:14px}
+.dcard{width:100%;max-width:620px;background:#fff;border:4px solid #1f2433;border-radius:22px;box-shadow:0 7px 0 rgba(31,36,51,.9);padding:22px 10px;text-align:center;transition:background .2s}
+.dcard.good{background:#d9fbe1}.dcard.bad{background:#ffe0e0;animation:shake .35s}
+.dq{font-size:64px;font-weight:900;font-family:Arial,sans-serif;letter-spacing:2px}
+.dbox{display:inline-block;min-width:1.4em;border:4px solid #1f2433;border-radius:14px;background:#fff6cf;padding:0 10px;line-height:1.2}
+.dmsg{min-height:30px;font-size:22px;margin-top:6px}.dmsg.ok{color:#1d8a3b}.dmsg.bad{color:#d6303a}
+.dtimer{width:100%;max-width:620px;height:12px;border:3px solid #1f2433;border-radius:8px;background:#fff;overflow:hidden}
+.dtimer i{display:block;height:100%;background:#25b04c}.dtimer i.slow{background:#f2b400}
+.dpad{width:100%}
+.dpad button{min-height:74px;font-size:34px}
+.saybtn{font-size:22px;padding:8px 20px;margin:6px 0;background:#cfe5ff}
+.qt{white-space:pre-line}
+
+/* ================= 動態與設計感 ================= */
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.06,.95)}}
+@keyframes rise{from{opacity:0;transform:translateY(24px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes twinkle{0%,100%{opacity:.35}50%{opacity:1}}
+@keyframes drift{from{transform:translateX(-10vw)}to{transform:translateX(110vw)}}
+@keyframes glow{0%,100%{text-shadow:0 4px 0 #1f2433,3px 3px 0 #1f2433,-3px 3px 0 #1f2433,0 0 0 rgba(255,211,110,0)}50%{text-shadow:0 4px 0 #1f2433,3px 3px 0 #1f2433,-3px 3px 0 #1f2433,0 0 22px rgba(255,211,110,.9)}}
+@keyframes shine{0%{left:-60%}60%,100%{left:130%}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-4deg)}75%{transform:rotate(4deg)}}
+@keyframes floaty{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-14px) rotate(8deg)}}
+/* 背景：閃爍星星、飄動的光點 */
+body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(2.5px 2.5px at 18% 22%,#fff 99%,transparent),radial-gradient(2px 2px at 42% 9%,#fff 99%,transparent),
+  radial-gradient(2.5px 2.5px at 64% 18%,#ffe9a8 99%,transparent),radial-gradient(2px 2px at 82% 30%,#fff 99%,transparent),radial-gradient(3px 3px at 6% 34%,#ffe9a8 99%,transparent);
+  animation:twinkle 3.2s ease-in-out infinite}
+.fx{position:fixed;z-index:-1;pointer-events:none;font-size:22px;opacity:.55;animation:floaty 6s ease-in-out infinite}
+/* 標題 */
+header{background:linear-gradient(90deg,rgba(31,24,64,.92),rgba(74,47,122,.92));border-bottom:3px solid rgba(255,211,110,.5)}
+.logo{animation:glow 3s ease-in-out infinite,bob 4s ease-in-out infinite}
+/* 人偶與怪獸會呼吸、上下浮動 */
+.avcard svg,.heroav svg,.bigav svg,.fighter.me .sprite svg,h1 .hdav svg{animation:bob 2.4s ease-in-out infinite}
+.avgrid .avcard:nth-child(3n+2) svg{animation-delay:-.8s}.avgrid .avcard:nth-child(3n) svg{animation-delay:-1.6s}
+.fighter.foe .sprite svg,.subj .ic svg{animation:breathe 2s ease-in-out infinite;transform-origin:50% 90%}
+.avcard.sel svg{animation:bob .9s ease-in-out infinite}
+.avcard:hover{transform:translateY(-4px)}
+.avcard{transition:transform .15s}
+/* 進場動畫（一張一張出現） */
+.avcard,.subj,.examrow,.sec,.login,.kid-hero,.arena,.dcard,.mistbox,.wpq{animation:rise .5s cubic-bezier(.2,.9,.3,1.2) both}
+.avgrid .avcard:nth-child(1),.subjects .subj:nth-child(1),.exams .examrow:nth-child(1){animation-delay:.03s}
+.avgrid .avcard:nth-child(2),.subjects .subj:nth-child(2),.exams .examrow:nth-child(2){animation-delay:.08s}
+.avgrid .avcard:nth-child(3),.subjects .subj:nth-child(3),.exams .examrow:nth-child(3){animation-delay:.13s}
+.avgrid .avcard:nth-child(4),.subjects .subj:nth-child(4),.exams .examrow:nth-child(4){animation-delay:.18s}
+.avgrid .avcard:nth-child(5),.subjects .subj:nth-child(5),.exams .examrow:nth-child(5){animation-delay:.23s}
+.avgrid .avcard:nth-child(6),.exams .examrow:nth-child(6){animation-delay:.28s}
+.avgrid .avcard:nth-child(7),.exams .examrow:nth-child(7){animation-delay:.33s}
+.avgrid .avcard:nth-child(8),.exams .examrow:nth-child(8){animation-delay:.38s}
+.avgrid .avcard:nth-child(n+9){animation-delay:.43s}
+/* 科目方塊：光澤掃過、按下彈跳 */
+.subj{position:relative;overflow:hidden;background-image:linear-gradient(160deg,rgba(255,255,255,.22),rgba(255,255,255,0) 45%,rgba(0,0,0,.12))}
+.subj::after{content:"";position:absolute;top:0;bottom:0;width:40%;left:-60%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-20deg);animation:shine 4.5s ease-in-out infinite}
+.subjects .subj:nth-child(2)::after{animation-delay:.9s}.subjects .subj:nth-child(3)::after{animation-delay:1.8s}.subjects .subj:nth-child(4)::after{animation-delay:2.7s}.subjects .subj:nth-child(5)::after{animation-delay:3.6s}
+.subj:hover .ic{animation:wiggle .5s ease-in-out}
+/* 按鈕：主要按鈕有光澤 */
+button.primary{position:relative;overflow:hidden;background:linear-gradient(180deg,#36c95f,#1f9d43)}
+button.primary::after{content:"";position:absolute;top:0;bottom:0;width:35%;left:-60%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);transform:skewX(-20deg);animation:shine 3s ease-in-out infinite;pointer-events:none}
+.examrow{transition:transform .15s}
+.examrow:hover{transform:translateX(4px)}
+.examrow:not(.cleared)::before{animation:pulse 2.2s ease-in-out infinite}
+.chip.gold{position:relative;overflow:hidden}
+.chip.gold::after{content:"";position:absolute;top:0;bottom:0;width:40%;left:-60%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.7),transparent);animation:shine 3.5s infinite}
+.vsx{animation:pulse 1.4s ease-in-out infinite}
+.hpbar i::after{content:"";position:absolute;inset:0 0 50% 0;background:rgba(255,255,255,.35);border-radius:6px}
+.kid-hero{background:linear-gradient(120deg,#fff 0%,#fff6d6 60%,#ffe7a3 100%)}
+.opt{transition:transform .1s,background .15s}
+.opt:hover{transform:translateY(-2px)}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+/* ===== 平板橫放（高度較矮）時的版面 ===== */
+@media (orientation: landscape) and (max-height: 900px){
+  main{padding-top:14px}
+  .arena{padding:6px 14px;margin:-4px 0 10px}
+  .fighter .sprite{width:58px;height:64px}
+  .fighter.foe .sprite svg{width:60px;height:60px}
+  .fighter.me .sprite svg{width:46px;height:62px}
+  .wp{display:grid;grid-template-columns:1fr auto;column-gap:28px;row-gap:12px;align-items:center;justify-items:center}
+  .wp > .wpbar,.wp > .wpdone{grid-column:1/-1}
+  .wp > .wpstep,.wp > .wpq,.wp > .wpbtns,.wp > .wpcheck{grid-column:1}
+  .wp > .wpbox{grid-column:2;grid-row:2/span 3;width:min(46vw,calc(100vh - 230px));height:min(46vw,calc(100vh - 230px))}
+  .wp > .wpbox .ghost{font-size:calc(min(46vw,100vh - 230px) * .8)}
+  .wp > .wpdone + .wpbtns{grid-column:1/-1}
+  .drill{display:grid;grid-template-columns:1fr 1fr;gap:14px 26px;align-items:center}
+  .drill > .wpbar,.drill > .wpdone,.drill > .wpbtns{grid-column:1/-1}
+  .drill > .dcard,.drill > .dtimer{grid-column:1}
+  .drill > .dpad{grid-column:2;grid-row:2/span 2}
+  .dq{font-size:56px}
+  .dpad button{min-height:68px}
+  .numkey{padding-top:8px;padding-bottom:8px}
+  .nkrow{grid-template-columns:repeat(6,1fr);max-width:900px}
+  .nkrow button{min-height:56px}
+  body.nkopen main{padding-bottom:180px}
+}
+
+.namesec{margin-top:22px}
+.namebar{display:flex;gap:14px;align-items:stretch;background:#fff;border:4px solid #1f2433;border-radius:20px;box-shadow:0 7px 0 rgba(31,36,51,.9);padding:12px;animation:rise .5s .45s cubic-bezier(.2,.9,.3,1.2) both}
+.namebar input{flex:1;min-width:0;font:inherit;font-size:28px;font-weight:700;padding:0 18px;height:68px;border:3px solid #1f2433;border-radius:14px;background:#fffdf3;color:#1f2433}
+.namebar input:focus{outline:none;box-shadow:0 0 0 4px rgba(255,200,61,.6);background:#fff}
+.namebar input::placeholder{color:#a6adbb;font-weight:500}
+.namebar button{flex:none;width:clamp(150px,24%,220px);height:68px;min-height:0;font-size:26px;border-radius:14px}
+.nameerr{text-align:center;color:#ffd36e;text-shadow:0 2px 0 #1f2433;margin-top:10px;min-height:24px}
+.parentlink{margin-top:4px}
+.sfxrow{display:flex;gap:6px}
+
+.explain{margin-top:10px;background:#fff6d6;border:3px solid #ffc83d;border-radius:12px;padding:10px 14px;font-size:18px;line-height:1.7;color:#5a4300;font-weight:700;white-space:normal}
+.dmsg .explain{font-size:17px;text-align:left}
+.vq .explain{font-size:15px}
+.wqlist{display:flex;flex-direction:column;gap:8px;max-height:420px;overflow:auto}
+.wqrow{display:flex;align-items:center;gap:12px;background:#fff8f8;border:2px solid #f3d6d6;border-radius:12px;padding:10px 14px;font-size:17px}
+.wqrow .wqt{flex:1;min-width:0}
+.wqrow .mn{color:var(--red);font-weight:900;white-space:nowrap}
+
+.missile{position:fixed;z-index:69;pointer-events:none;font-size:40px;margin:-24px 0 0 -20px;transition:transform .4s cubic-bezier(.5,0,.9,.6);filter:drop-shadow(0 0 6px #ffb347)}
+.boom{position:fixed;z-index:70;pointer-events:none;font-size:80px;transform:translate(-50%,-50%) scale(.3);animation:boom .6s ease-out forwards}
+@keyframes boom{40%{transform:translate(-50%,-50%) scale(1.4);opacity:1}100%{transform:translate(-50%,-50%) scale(1.8);opacity:0}}
+.fighter.me .sprite.dead{animation:meDie 1s forwards}
+@keyframes meDie{30%{transform:rotate(-15deg)}100%{transform:rotate(90deg) translateX(20px);opacity:.4;filter:grayscale(1)}}
+.gameover{position:fixed;inset:0;z-index:80;background:rgba(20,10,30,.78);display:flex;align-items:center;justify-content:center;animation:rise .4s both}
+.gobox{background:#fff;border:5px solid #1f2433;border-radius:24px;box-shadow:0 10px 0 #1f2433;padding:24px 34px;text-align:center;max-width:min(560px,90vw)}
+.goav svg{width:90px;height:120px;transform:rotate(90deg);filter:grayscale(1);margin:-10px 0 -20px}
+.gotitle{font-size:40px;font-weight:900;color:#d6303a}
+.gosub{font-size:19px;color:#34405c;margin:8px 0 16px}
+
+.wideopts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:10px}
+.wideopts .opt{text-align:left;font-size:22px;min-height:60px;padding:10px 18px;white-space:normal;overflow-wrap:anywhere}
+.wppts,.chip.gold{white-space:nowrap}
+.cardshelf{background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(255,246,214,.95));border:4px solid #1f2433;border-radius:20px;box-shadow:0 7px 0 rgba(31,36,51,.9);padding:12px 16px 16px;margin:-6px 0 22px;animation:rise .5s .1s both}
+.shelfh{display:flex;align-items:baseline;gap:12px;margin-bottom:10px}.shelfh b{font-size:21px}.shelfh small{color:#5a6680;font-size:15px}
+.cardrow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.rcard{position:relative;border:4px solid #1f2433;border-radius:18px;padding:16px 12px 12px;text-align:center;overflow:hidden;box-shadow:0 5px 0 #1f2433}
+.rcard.diamond{background:linear-gradient(135deg,#b8f3ff,#e2d4ff 50%,#9fe7ff)}
+.rcard.gold{background:linear-gradient(135deg,#fff3b0,#ffd36e 50%,#ffe9a3)}
+.rcard.merit{background:linear-gradient(135deg,#ffe0ef,#ffc2dc 50%,#ffe6f2)}
+.rcard::after{content:"";position:absolute;top:0;bottom:0;width:40%;left:-60%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.7),transparent);transform:skewX(-20deg);animation:shine 3.2s ease-in-out infinite}
+.rcard.locked{filter:grayscale(1);opacity:.55}.rcard.locked::after{display:none}
+.rcicon{font-size:52px;line-height:1.1;animation:bob 2s ease-in-out infinite}
+.rcname{font-size:20px;font-weight:900;margin-top:4px}
+.rcjoke{font-size:14px;color:#3a3f55;line-height:1.5;margin-top:4px;min-height:42px}
+.rcrule{font-size:13px;color:#1f2433;font-weight:900;margin-top:6px;border-top:2px dashed rgba(31,36,51,.45);padding-top:5px}
+.rcard.locked .rcrule{color:#1f2433}
+.rcard:not(.small) .rcrule{font-size:15px}
+.rcard .st{position:absolute;font-size:18px;animation:twinkle 1.6s ease-in-out infinite}
+.rcard .s1{top:6px;left:8px}.rcard .s2{top:8px;right:10px;animation-delay:.4s}.rcard .s3{top:44%;left:4px;animation-delay:.8s}
+.rcard .s4{top:46%;right:4px;animation-delay:1.1s}.rcard .s5{bottom:6px;left:12px;animation-delay:.6s}.rcard .s6{bottom:8px;right:12px;animation-delay:1.3s}
+.rcard:not(.small){width:min(340px,80vw);margin:12px auto 4px;padding:26px 18px 16px}
+.rcard:not(.small) .rcicon{font-size:90px}.rcard:not(.small) .rcname{font-size:30px}.rcard:not(.small) .rcjoke{font-size:18px}
+.rcard:not(.small) .st{font-size:26px}
+.gotitle.win{color:#e08a00}
+@media (orientation: portrait) and (max-width: 700px){.cardrow{grid-template-columns:1fr}}
+
+.herobtns{display:flex;flex-direction:column;gap:10px}
+.shopbtn{background:linear-gradient(180deg,#ffd36e,#f2b400)!important;font-size:18px!important}
+.rccount{position:absolute;top:6px;right:8px;background:#1f2433;color:#fff;border-radius:999px;padding:2px 10px;font-size:16px;font-weight:900;z-index:2}
+.rcard.small .rccount{top:6px;left:8px;right:auto;font-size:15px}
+.popcards{margin:12px 0}
+.shoptop{display:flex;flex-wrap:wrap;align-items:center;gap:12px;background:#fff;border:4px solid #1f2433;border-radius:20px;box-shadow:0 7px 0 rgba(31,36,51,.9);padding:14px 18px;margin-bottom:18px}
+.shoptitle{font-size:28px;font-weight:900;flex:1}
+.shopbal{background:#ffd36e;border:3px solid #1f2433;border-radius:999px;padding:6px 16px;font-size:20px;font-weight:900}
+.shopbal.t{background:#cfe5ff}
+.shopinv{margin-bottom:18px}
+.shopmsg{background:#d9fbe1;border:3px solid #1d8a3b;border-radius:14px;padding:10px 14px;font-size:19px;margin-bottom:14px;color:#1d6b33}
+.shoplist{display:flex;flex-direction:column;gap:12px}
+.shoprow{display:flex;align-items:center;gap:14px;background:#fff;border:4px solid #1f2433;border-radius:18px;box-shadow:0 6px 0 rgba(31,36,51,.9);padding:12px 16px;animation:rise .4s both}
+.shoprow b{flex:1;font-size:21px}
+.shopicon{font-size:38px}
+.shoprow button{min-width:120px}
+.shophint{background:rgba(255,255,255,.85);border-radius:12px;padding:10px 14px;margin-top:16px}
+.hintbtn{font-size:13px;min-height:0;padding:4px 8px;border-width:2px;box-shadow:0 2px 0 #1f2433;border-radius:10px;background:#fff6cf;white-space:nowrap}
+.vs{width:auto!important;min-width:84px}
+.hintmark{outline:4px dashed #ffc83d;outline-offset:3px}
+.hintbox{margin-top:8px;display:inline-block;background:#cfe5ff;border:3px solid #2f80ed;border-radius:12px;padding:6px 12px;font-size:18px;font-weight:900;color:#1f4f9e}
+.wpflash.small{font-size:26px;-webkit-text-stroke:1px #1f2433;color:#fff}
+
+/* ================= 精修：遊戲 UI ================= */
+body,button,input{font-family:"Huninn","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
+body{background:linear-gradient(180deg,#1b1240 0%,#3a2470 38%,#b64f7a 70%,#ff9a5a 86%,#ffcf7a 100%) fixed}
+body::before,body::after{display:none}
+.fx{display:none}
+.scene{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.scene .far{position:absolute;left:0;right:0;bottom:20vh;width:100%;height:28vh;opacity:.9}
+.scene .castle{position:absolute;right:6vw;bottom:calc(20vh - 4px);width:min(30vw,260px);height:auto}
+.scene .castle .flag{transform-origin:122px 13px;animation:flag 1.2s ease-in-out infinite}
+@keyframes flag{50%{transform:scaleX(.75) skewY(4deg)}}
+.scene .near{position:absolute;left:0;right:0;bottom:0;width:100%;height:24vh}
+.cloud{position:absolute;height:22px;background:#fff;opacity:.55;border-radius:4px;box-shadow:16px -10px 0 0 #fff,40px -4px 0 6px #fff,70px 0 0 0 #fff;animation:drift linear infinite}
+.cloud.c1{top:12vh;width:60px;animation-duration:70s}.cloud.c2{top:24vh;width:80px;animation-duration:95s;animation-delay:-40s;opacity:.4}.cloud.c3{top:6vh;width:50px;animation-duration:120s;animation-delay:-80s;opacity:.35}
+@keyframes drift{from{transform:translateX(-160px)}to{transform:translateX(110vw)}}
+.spark{position:fixed;z-index:-1;width:4px;height:4px;background:#fff;box-shadow:0 0 6px #fff;pointer-events:none;animation:twinkle 2.4s steps(3) infinite}
+main.enter{animation:pageIn .35s cubic-bezier(.2,.9,.3,1.1)}
+@keyframes pageIn{from{opacity:0;transform:translateY(14px) scale(.985)}}
+header{background:linear-gradient(180deg,#2a1d55,#1d1440);border-bottom:4px solid #120b26;box-shadow:0 4px 0 rgba(0,0,0,.25)}
+h1{letter-spacing:.5px}
+/* 按鈕：厚邊、頂部高光條 */
+button{background:linear-gradient(180deg,#fff 0%,#fff 55%,#e9edf5 56%,#e9edf5 100%)}
+button.primary{background:linear-gradient(180deg,#43d46a 0%,#2bbb52 55%,#1f9d43 56%,#1f9d43 100%)!important}
+button.primary::after{display:none}
+#back{background:linear-gradient(180deg,#ffd84d 0%,#ffc83d 55%,#f0a800 56%)}
+/* 卡片面板：像素風邊角 */
+.sec,.login,.examrow,.mistbox,.prow,.cat,.addform,.card,.empty,.wpdone,.kid-hero,.cardshelf,.shoptop,.shoprow,.namebar,.dcard,.wpq,.arena,.avcard{border-radius:14px!important}
+.kid-hero{background:linear-gradient(180deg,#fffaf0,#ffefc4)}
+/* 區塊標題：彩帶 */
+.kindtitle{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:26px 0 14px}
+.ribbon{position:relative;display:inline-flex;align-items:center;gap:10px;background:#ffc83d;color:#1f2433;text-shadow:none;border:4px solid #1f2433;padding:6px 22px 6px 14px;font-size:22px;box-shadow:0 4px 0 #1f2433;clip-path:polygon(0 0,100% 0,calc(100% - 12px) 50%,100% 100%,0 100%)}
+.kindtitle small.hint{display:inline;margin:0;color:#fff;font-size:15px}
+/* 科目方塊：關卡入口感 */
+.subj{border-radius:16px!important;padding-top:28px!important}
+.subj::before{content:"";position:absolute;inset:6px;border:2px dashed rgba(255,255,255,.35);border-radius:10px;pointer-events:none}
+.subj .ic{border-radius:14px!important}
+/* 等級條 */
+.lvbar{display:flex;align-items:center;gap:10px;margin-top:10px}
+.lvbar .lv{background:#1f2433;color:#ffd84d;font-size:18px;padding:3px 12px;border-radius:8px;letter-spacing:1px}
+.lvbar .xp{flex:1;max-width:260px;height:16px;background:#fff;border:3px solid #1f2433;border-radius:8px;overflow:hidden}
+.lvbar .xp i{display:block;height:100%;background:repeating-linear-gradient(90deg,#43d46a 0 10px,#2bbb52 10px 20px)}
+.lvbar small{color:#5a4300;font-size:14px}
+.chip{display:inline-flex;align-items:center;gap:6px}
+.pix{vertical-align:-3px;image-rendering:pixelated}
+.rcicon .pix{filter:drop-shadow(0 4px 0 rgba(0,0,0,.18))}
+.rcard .st{opacity:.9}
+.shopicon{display:flex;align-items:center}
+.shoptitle,.shopbal{display:flex;align-items:center;gap:8px}
+.hintbtn .pix{vertical-align:-2px}
+.wppts{display:inline-flex;align-items:center;gap:6px}
+.hearts{display:flex;gap:2px;align-items:center}
+.hearts .pix{width:22px;height:20px}
+.avcard.sel{background:linear-gradient(180deg,#fff7d1,#ffd36e)!important}
+.logo{font-family:"Huninn","Noto Sans TC",sans-serif;font-size:50px}
+@media (prefers-reduced-motion: reduce){.cloud,.spark,.scene .castle .flag{animation:none}}
+.logo{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap}.logo small{flex-basis:100%}.pix.flip{transform:scaleX(-1)}
+</style>
+</head>
+<body>
+<header>
+  <button id="back">‹ 返回</button>
+  <h1 id="hd"></h1>
+  <span class="score" id="score"></span>
+</header>
+<main id="app"></main>
+
+<div class="modal" id="modal">
+  <div class="pad">
+    <div class="padtop"><div class="padzy" id="padzy"></div><div class="padctx" id="padctx"></div></div>
+    <div class="cvwrap"><canvas id="cv"></canvas></div>
+    <div class="padbtns">
+      <button id="btnUndo">上一筆</button>
+      <button id="btnClear">清除</button>
+      <button id="btnClose">關閉</button>
+      <button id="btnNext" class="primary">下一格 ▶</button>
+    </div>
+  </div>
+</div>
+
+<script src="icons.js"></script>
+<script src="avatars.js"></script>
+<script src="battle.js"></script>
+<script src="exams_science.js"></script>
+<script src="exams_social.js"></script>
+<script src="exams_math.js"></script>
+<script src="exams_english.js"></script>
+<script>
+/* ============================================================
+   設定區：年級、科目、考卷
+   之後加考卷，只要在 EXAMS 裡加一筆
+   ============================================================ */
+const GRADES = ["一年級","二年級","三年級","四年級","五年級","六年級"];
+const DEFAULT_GRADE = "三年級";
+const KID_COLORS = ["#e57373","#64b5f6","#81c784","#ffb74d","#ba68c8","#4db6ac"];
+
+const SUBJECTS = [
+  { id: "chinese", name: "國語", icon: "國", color: "#d9534f" },
+  { id: "math",    name: "數學", icon: "數", color: "#2f6fb5" },
+  { id: "science", name: "自然", icon: "自", color: "#2e8b57" },
+  { id: "social",  name: "社會", icon: "社", color: "#c98a1b" },
+  { id: "english", name: "英語", icon: "英", color: "#7b5ea7" }
+];
+
+/* 題型說明
+   zhuyin：看注音寫國字（手寫，家長批改）  字串＝題目文字、{c:答案,z:注音}＝空格、{c:字,g:1}＝題目給的字
+   choice：選擇題（自動改）              {q:題目, opts:[選項], a:正確選項的位置(從0開始)}
+   tf：    是非題（自動改）              {q:題目, a:true/false}
+   fill：  填充題（自動改）              {q:"題目用 ＿＿ 表示空格", a:"答案" 或 ["可接受答案",...], unit:單位, num:true 跳數字鍵盤}
+   calc：  計算題（算式手寫不計分，答案自動改） {q:題目, a:答案, unit:單位}
+*/
+const EXAMS = [
+  /* ---- 國語：生字練習（kind: "words"）----
+     每個字：c=國字、z=注音、w=語詞（用「○」代表這個字的位置）*/
+  { id: "w3-nani-1-1", kind: "words", grade: "三年級", subject: "chinese", title: "第一課 你好，新朋友（南一三上）",
+    words: [{"c": "泥", "z": "ㄋㄧˊ", "w": "○巴"}, {"c": "化", "z": "ㄏㄨㄚˋ", "w": "○石"}, {"c": "雀", "z": "ㄑㄩㄝˋ", "w": "孔○"}, {"c": "輕", "z": "ㄑㄧㄥ", "w": "○巧"}, {"c": "羽", "z": "ㄩˇ", "w": "○毛"}, {"c": "衣", "z": "ㄧ", "w": "○服"}, {"c": "脆", "z": "ㄘㄨㄟˋ", "w": "○弱"}, {"c": "髮", "z": "ㄈㄚˇ", "w": "頭○"}, {"c": "處", "z": "ㄔㄨˋ", "w": "訓導○"}, {"c": "旅", "z": "ㄌㄩˇ", "w": "○行"}, {"c": "行", "z": "ㄒㄧㄥˊ", "w": "旅○"}, {"c": "平", "z": "ㄆㄧㄥˊ", "w": "○面"}, {"c": "男", "z": "ㄋㄢˊ", "w": "○生"}, {"c": "朗", "z": "ㄌㄤˇ", "w": "開○"}, {"c": "足", "z": "ㄗㄨˊ", "w": "○夠"}] },
+  { id: "w3-nani-1-2", kind: "words", grade: "三年級", subject: "chinese", title: "第二課 我們的約定（南一三上）",
+    words: [{"c": "廊", "z": "ㄌㄤˊ", "w": "走○"}, {"c": "訂", "z": "ㄉㄧㄥˋ", "w": "○便當"}, {"c": "班", "z": "ㄅㄢ", "w": "○級"}, {"c": "級", "z": "ㄐㄧˊ", "w": "班○"}, {"c": "約", "z": "ㄩㄝ", "w": "大○"}, {"c": "紛", "z": "ㄈㄣ", "w": "糾○"}, {"c": "持", "z": "ㄔˊ", "w": "手○"}, {"c": "記", "z": "ㄐㄧˋ", "w": "○錄"}, {"c": "錄", "z": "ㄌㄨˋ", "w": "記○"}, {"c": "聊", "z": "ㄌㄧㄠˊ", "w": "○天"}, {"c": "言", "z": "ㄧㄢˊ", "w": "語○"}, {"c": "烈", "z": "ㄌㄧㄝˋ", "w": "強○"}, {"c": "些", "z": "ㄒㄧㄝ", "w": "一○"}, {"c": "提", "z": "ㄊㄧˊ", "w": "手○行李"}, {"c": "愁", "z": "ㄔㄡˊ", "w": "憂○"}] },
+  { id: "w3-nani-1-3", kind: "words", grade: "三年級", subject: "chinese", title: "第三課 下課十分鐘（南一三上）",
+    words: [{"c": "短", "z": "ㄉㄨㄢˇ", "w": "○頭髮"}, {"c": "鐘", "z": "ㄓㄨㄥ", "w": "時○"}, {"c": "鬼", "z": "ㄍㄨㄟˇ", "w": "○怪"}, {"c": "鬧", "z": "ㄋㄠˋ", "w": "吵○"}, {"c": "準", "z": "ㄓㄨㄣˇ", "w": "○時"}, {"c": "朝", "z": "ㄔㄠˊ", "w": "○上面大叫"}, {"c": "蹈", "z": "ㄉㄠˋ", "w": "舞○"}, {"c": "表", "z": "ㄅㄧㄠˇ", "w": "○演"}, {"c": "暢", "z": "ㄔㄤˋ", "w": "流○"}, {"c": "無", "z": "ㄨˊ", "w": "○法"}, {"c": "總", "z": "ㄗㄨㄥˇ", "w": "○是"}, {"c": "響", "z": "ㄒㄧㄤˇ", "w": "音○"}, {"c": "忘", "z": "ㄨㄤˋ", "w": "○記"}, {"c": "盡", "z": "ㄐㄧㄣˋ", "w": "○責"}, {"c": "責", "z": "ㄗㄜˊ", "w": "盡○"}] },
+  { id: "w3-nani-1-4", kind: "words", grade: "三年級", subject: "chinese", title: "第四課 一顆黑點（南一三上）",
+    words: [{"c": "悶", "z": "ㄇㄣˋ", "w": "煩○"}, {"c": "惱", "z": "ㄋㄠˇ", "w": "煩○"}, {"c": "吵", "z": "ㄔㄠˇ", "w": "○鬧"}, {"c": "嗓", "z": "ㄙㄤˇ", "w": "○子"}, {"c": "煩", "z": "ㄈㄢˊ", "w": "○惱"}, {"c": "勉", "z": "ㄇㄧㄢˇ", "w": "○強"}, {"c": "強", "z": "ㄑㄧㄤˇ", "w": "勉○"}, {"c": "耐", "z": "ㄋㄞˋ", "w": "○心"}, {"c": "脾", "z": "ㄆㄧˊ", "w": "○臟"}, {"c": "解", "z": "ㄐㄧㄝˇ", "w": "○決"}, {"c": "央", "z": "ㄧㄤ", "w": "中○"}, {"c": "霧", "z": "ㄨˋ", "w": "濃○"}, {"c": "緊", "z": "ㄐㄧㄣˇ", "w": "不要○"}, {"c": "尖", "z": "ㄐㄧㄢ", "w": "○端科技"}, {"c": "雖", "z": "ㄙㄨㄟ", "w": "○然"}] },
+  { id: "w3-nani-1-5", kind: "words", grade: "三年級", subject: "chinese", title: "第五課 火大了（南一三上）",
+    words: [{"c": "龍", "z": "ㄌㄨㄥˊ", "w": "恐○"}, {"c": "沖", "z": "ㄔㄨㄥ", "w": "○水"}, {"c": "體", "z": "ㄊㄧˇ", "w": "身○"}, {"c": "兄", "z": "ㄒㄩㄥ", "w": "○弟"}, {"c": "吐", "z": "ㄊㄨˇ", "w": "○氣"}, {"c": "轉", "z": "ㄓㄨㄢˇ", "w": "○頭"}, {"c": "歪", "z": "ㄨㄞ", "w": "○七扭八"}, {"c": "防", "z": "ㄈㄤˊ", "w": "○盜"}, {"c": "警", "z": "ㄐㄧㄥˇ", "w": "○鈴"}, {"c": "鈴", "z": "ㄌㄧㄥˊ", "w": "警○"}, {"c": "注", "z": "ㄓㄨˋ", "w": "○意"}, {"c": "員", "z": "ㄩㄢˊ", "w": "工作人○"}, {"c": "傷", "z": "ㄕㄤ", "w": "受○"}, {"c": "死", "z": "ㄙˇ", "w": "○亡"}, {"c": "諒", "z": "ㄌㄧㄤˋ", "w": "原○"}] },
+  { id: "w3-nani-1-6", kind: "words", grade: "三年級", subject: "chinese", title: "第六課 我該怎麼辦？（南一三上）",
+    words: [{"c": "幕", "z": "ㄇㄨˋ", "w": "電視螢○"}, {"c": "杯", "z": "ㄅㄟ", "w": "水○"}, {"c": "流", "z": "ㄌㄧㄡˊ", "w": "小橋○水"}, {"c": "溼", "z": "ㄕ", "w": "○毛巾"}, {"c": "透", "z": "ㄊㄡˋ", "w": "○明"}, {"c": "雙", "z": "ㄕㄨㄤ", "w": "○胞胎"}, {"c": "胸", "z": "ㄒㄩㄥ", "w": "○部"}, {"c": "負", "z": "ㄈㄨˋ", "w": "○責"}, {"c": "逃", "z": "ㄊㄠˊ", "w": "○跑"}, {"c": "辦", "z": "ㄅㄢˋ", "w": "○公室"}, {"c": "露", "z": "ㄌㄡˋ", "w": "○出馬腳"}, {"c": "題", "z": "ㄊㄧˊ", "w": "○目"}, {"c": "部", "z": "ㄅㄨˋ", "w": "胸○"}, {"c": "灰", "z": "ㄏㄨㄟ", "w": "○色"}, {"c": "剪", "z": "ㄐㄧㄢˇ", "w": "○刀"}] },
+  /* ---- 國語：造詞區（kind: "review"）---- */
+  { id: "r3-nani-1-mid1a", kind: "review", grade: "三年級", subject: "chinese", title: "第一次期中考複習 第 1 關（第一～三課）",
+    sections: [ { type: "zhuyin", title: "看注音，寫出語詞裡的生字", perItem: 2.5, mini: true, items: [[{"c": "泥", "z": "ㄋㄧˊ"}, "巴", "。"], [{"c": "化", "z": "ㄏㄨㄚˋ"}, "石", "。"], ["孔", {"c": "雀", "z": "ㄑㄩㄝˋ"}, "。"], [{"c": "輕", "z": "ㄑㄧㄥ"}, "巧", "。"], [{"c": "羽", "z": "ㄩˇ"}, "毛", "。"], [{"c": "衣", "z": "ㄧ"}, "服", "。"], [{"c": "脆", "z": "ㄘㄨㄟˋ"}, "弱", "。"], ["頭", {"c": "髮", "z": "ㄈㄚˇ"}, "。"], ["訓導", {"c": "處", "z": "ㄔㄨˋ"}, "。"], [{"c": "旅", "z": "ㄌㄩˇ"}, {"c": "行", "z": "ㄒㄧㄥˊ"}, "。"], [{"c": "平", "z": "ㄆㄧㄥˊ"}, "面", "。"], [{"c": "男", "z": "ㄋㄢˊ"}, "生", "。"], ["開", {"c": "朗", "z": "ㄌㄤˇ"}, "。"], [{"c": "足", "z": "ㄗㄨˊ"}, "夠", "。"], ["走", {"c": "廊", "z": "ㄌㄤˊ"}, "。"], [{"c": "訂", "z": "ㄉㄧㄥˋ"}, "便當", "。"], [{"c": "班", "z": "ㄅㄢ"}, {"c": "級", "z": "ㄐㄧˊ"}, "。"], ["大", {"c": "約", "z": "ㄩㄝ"}, "。"], ["糾", {"c": "紛", "z": "ㄈㄣ"}, "。"], ["手", {"c": "持", "z": "ㄔˊ"}, "。"], [{"c": "記", "z": "ㄐㄧˋ"}, {"c": "錄", "z": "ㄌㄨˋ"}, "。"], [{"c": "聊", "z": "ㄌㄧㄠˊ"}, "天", "。"], ["語", {"c": "言", "z": "ㄧㄢˊ"}, "。"], ["強", {"c": "烈", "z": "ㄌㄧㄝˋ"}, "。"], ["一", {"c": "些", "z": "ㄒㄧㄝ"}, "。"], ["手", {"c": "提", "z": "ㄊㄧˊ"}, "行李", "。"], ["憂", {"c": "愁", "z": "ㄔㄡˊ"}, "。"], [{"c": "短", "z": "ㄉㄨㄢˇ"}, "頭髮", "。"], ["時", {"c": "鐘", "z": "ㄓㄨㄥ"}, "。"], [{"c": "鬼", "z": "ㄍㄨㄟˇ"}, "怪", "。"], ["吵", {"c": "鬧", "z": "ㄋㄠˋ"}, "。"], [{"c": "準", "z": "ㄓㄨㄣˇ"}, "時", "。"], ["舞", {"c": "蹈", "z": "ㄉㄠˋ"}, "。"], [{"c": "表", "z": "ㄅㄧㄠˇ"}, "演", "。"], ["流", {"c": "暢", "z": "ㄔㄤˋ"}, "。"], [{"c": "無", "z": "ㄨˊ"}, "法", "。"], [{"c": "總", "z": "ㄗㄨㄥˇ"}, "是", "。"], ["音", {"c": "響", "z": "ㄒㄧㄤˇ"}, "。"], [{"c": "忘", "z": "ㄨㄤˋ"}, "記", "。"], [{"c": "盡", "z": "ㄐㄧㄣˋ"}, {"c": "責", "z": "ㄗㄜˊ"}, "。"]] } ] },
+  { id: "r3-nani-1-mid1b", kind: "review", grade: "三年級", subject: "chinese", title: "第一次期中考複習 第 2 關（第四～六課）",
+    sections: [ { type: "zhuyin", title: "看注音，寫出語詞裡的生字", perItem: 2.5, mini: true, items: [["煩", {"c": "悶", "z": "ㄇㄣˋ"}, "。"], [{"c": "煩", "z": "ㄈㄢˊ"}, {"c": "惱", "z": "ㄋㄠˇ"}, "。"], [{"c": "吵", "z": "ㄔㄠˇ"}, "鬧", "。"], [{"c": "嗓", "z": "ㄙㄤˇ"}, "子", "。"], [{"c": "勉", "z": "ㄇㄧㄢˇ"}, {"c": "強", "z": "ㄑㄧㄤˇ"}, "。"], [{"c": "耐", "z": "ㄋㄞˋ"}, "心", "。"], [{"c": "脾", "z": "ㄆㄧˊ"}, "臟", "。"], [{"c": "解", "z": "ㄐㄧㄝˇ"}, "決", "。"], ["中", {"c": "央", "z": "ㄧㄤ"}, "。"], ["濃", {"c": "霧", "z": "ㄨˋ"}, "。"], ["不要", {"c": "緊", "z": "ㄐㄧㄣˇ"}, "。"], [{"c": "雖", "z": "ㄙㄨㄟ"}, "然", "。"], ["恐", {"c": "龍", "z": "ㄌㄨㄥˊ"}, "。"], [{"c": "沖", "z": "ㄔㄨㄥ"}, "水", "。"], ["身", {"c": "體", "z": "ㄊㄧˇ"}, "。"], [{"c": "兄", "z": "ㄒㄩㄥ"}, "弟", "。"], [{"c": "吐", "z": "ㄊㄨˇ"}, "氣", "。"], [{"c": "轉", "z": "ㄓㄨㄢˇ"}, "頭", "。"], [{"c": "歪", "z": "ㄨㄞ"}, "七扭八", "。"], [{"c": "防", "z": "ㄈㄤˊ"}, "盜", "。"], [{"c": "警", "z": "ㄐㄧㄥˇ"}, {"c": "鈴", "z": "ㄌㄧㄥˊ"}, "。"], [{"c": "注", "z": "ㄓㄨˋ"}, "意", "。"], ["工作人", {"c": "員", "z": "ㄩㄢˊ"}, "。"], ["受", {"c": "傷", "z": "ㄕㄤ"}, "。"], [{"c": "死", "z": "ㄙˇ"}, "亡", "。"], ["原", {"c": "諒", "z": "ㄌㄧㄤˋ"}, "。"], ["電視螢", {"c": "幕", "z": "ㄇㄨˋ"}, "。"], ["水", {"c": "杯", "z": "ㄅㄟ"}, "。"], ["小橋", {"c": "流", "z": "ㄌㄧㄡˊ"}, "水", "。"], [{"c": "溼", "z": "ㄕ"}, "毛巾", "。"], [{"c": "透", "z": "ㄊㄡˋ"}, "明", "。"], [{"c": "雙", "z": "ㄕㄨㄤ"}, "胞胎", "。"], [{"c": "胸", "z": "ㄒㄩㄥ"}, {"c": "部", "z": "ㄅㄨˋ"}, "。"], [{"c": "負", "z": "ㄈㄨˋ"}, "責", "。"], [{"c": "逃", "z": "ㄊㄠˊ"}, "跑", "。"], [{"c": "辦", "z": "ㄅㄢˋ"}, "公室", "。"], [{"c": "露", "z": "ㄌㄡˋ"}, "出馬腳", "。"], [{"c": "題", "z": "ㄊㄧˊ"}, "目", "。"], [{"c": "灰", "z": "ㄏㄨㄟ"}, "色", "。"], [{"c": "剪", "z": "ㄐㄧㄢˇ"}, "刀", "。"]] } ] },
+  /* ---- 國語：閱讀測驗（kind: "reading"，用 passage + choice 等題型）---- 之後放文章 */
+
+];
+
+
+if (typeof EXTRA_EXAMS !== 'undefined') EXAMS.push(...EXTRA_EXAMS);
+
+/* ============================================================
+   以下是程式，平常不用改
+   ============================================================ */
+const app = document.getElementById('app'), hd = document.getElementById('hd'),
+      scoreEl = document.getElementById('score'), backBtn = document.getElementById('back');
+let backTo = null, state = null, penSeen = false, pads = [], curKid = null;
+
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function setHeader(title, back) { app.classList.remove('enter'); void app.offsetWidth; app.classList.add('enter'); if (typeof NumKey !== 'undefined') NumKey.close(); if (typeof SFX !== 'undefined') SFX.playMusic('menu'); document.querySelectorAll('.gameover').forEach(x => x.remove()); backBtn.textContent = '‹ 返回'; hd.textContent = title;
+  if (curKid && curKid.avatar && !parentMode) { const a = el('span', 'hdav'); a.innerHTML = avatarSVG(curKid.avatar); hd.prepend(a); }
+  backTo = back; backBtn.style.display = back ? 'inline-block' : 'none'; scoreEl.textContent = ''; }
+backBtn.onclick = () => backTo && backTo();
+function today() { return new Date().toLocaleDateString('zh-TW'); }
+
+/* ---------- 資料儲存：有雲端資料庫就存雲端（換裝置也看得到），沒有就存在這台平板 ---------- */
+const Store = {
+  db: null,
+  cat: { hiddenSubjects: [], hiddenExams: [], deletedExams: [] },
+  ready: null,
+  timeout(p) { return Promise.race([p, new Promise((_, rej) => setTimeout(() => rej({ code: 'timeout' }), 10000))]); },
+  local(key, val) {
+    try {
+      if (val === undefined) return JSON.parse(localStorage.getItem(key) || 'null');
+      localStorage.setItem(key, JSON.stringify(val));
+    } catch (e) { return null; }
+  },
+  async kids() {
+    if (this.db) {
+      const snap = await this.timeout(this.db.collection('kids').orderBy('createdAt').get());
+      return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    }
+    return this.local('kids') || [];
+  },
+  async addKid(name, grade, salt, pinHash, avatar) {
+    const kid = { name, grade, salt, pinHash, avatar: avatar || 'knight', createdAt: Date.now() };
+    if (this.db) { const ref = await this.db.collection('kids').add(kid); return { id: ref.id, ...kid }; }
+    const list = this.local('kids') || []; const k = { id: 'k' + Date.now(), ...kid };
+    list.push(k); this.local('kids', list); return k;
+  },
+  async updateKid(id, fields) {
+    if (this.db) return this.db.doc(`kids/${id}`).update(fields);
+    const list = this.local('kids') || []; const k = list.find(x => x.id === id); Object.assign(k, fields); this.local('kids', list);
+  },
+  async deleteKid(id) {
+    if (this.db) return this.db.doc(`kids/${id}`).delete();
+    this.local('kids', (this.local('kids') || []).filter(x => x.id !== id));
+  },
+  async parentHash() {
+    if (this.db) { const d = await this.timeout(this.db.doc('settings/parent').get()); return d.exists ? d.data().pinHash : null; }
+    return (this.local('parent') || {}).pinHash || null;
+  },
+  async setParentHash(h) {
+    if (this.db) return this.db.doc('settings/parent').set({ pinHash: h });
+    this.local('parent', { pinHash: h });
+  },
+  async catalog() {
+    let c;
+    if (this.db) { const d = await this.timeout(this.db.doc('settings/catalog').get()); c = d.exists ? d.data() : null; }
+    else c = this.local('catalog');
+    this.cat = { hiddenSubjects: [], hiddenExams: [], deletedExams: [], ...(c || {}) };
+    return this.cat;
+  },
+  async setCatalog(c) {
+    this.cat = c;
+    if (this.db) return this.db.doc('settings/catalog').set(c);
+    this.local('catalog', c);
+  },
+  async records(kidId) {
+    if (this.db) {
+      const snap = await this.timeout(this.db.collection(`kids/${kidId}/records`).get());
+      const r = {}; snap.docs.forEach(d => r[d.id] = d.data()); return r;
+    }
+    return this.local('rec-' + kidId) || {};
+  },
+  // newAttempt=true：這次是新的一次考試；false：同一次考試裡家長改了批改結果
+  async setWallet(kidId, w) {
+    if (this.db) return this.db.doc(`kids/${kidId}/records/_wallet`).set(w);
+    const all = this.local('rec-' + kidId) || {}; all._wallet = w; this.local('rec-' + kidId, all);
+  },
+  async setWrong(kidId, m) {
+    if (this.db) return this.db.doc(`kids/${kidId}/records/_wrongq`).set(m);
+    const all = this.local('rec-' + kidId) || {}; all._wrongq = m; this.local('rec-' + kidId, all);
+  },
+  async setMistakes(kidId, m) {
+    if (this.db) return this.db.doc(`kids/${kidId}/records/_mistakes`).set(m);
+    const all = this.local('rec-' + kidId) || {}; all._mistakes = m; this.local('rec-' + kidId, all);
+  },
+  async saveRecord(kidId, examId, score, newAttempt) {
+    const all = this.db ? null : (this.local('rec-' + kidId) || {});
+    let rec;
+    if (this.db) { const d = await this.db.doc(`kids/${kidId}/records/${examId}`).get(); rec = d.exists ? structuredClone(d.data()) : null; }
+    else rec = all[examId] || null;
+    rec = rec || { history: [] };
+    const h = rec.history || [];
+    if (newAttempt || !h.length) h.push({ score, date: today() }); else h[h.length - 1] = { score, date: today() };
+    rec = { score, date: today(), attempts: h.length, best: Math.max(...h.map(x => x.score)), history: h.slice(-20) };
+    if (this.db) await this.db.doc(`kids/${kidId}/records/${examId}`).set(rec);
+    else { all[examId] = rec; this.local('rec-' + kidId, all); }
+  }
+};
+Store.ready = (async () => {
+  try { if (window.claude && claude.use) Store.db = await claude.use('db'); } catch (e) { Store.db = null; }
+})();
+
+function statusLine(text, warn) { const d = el('div', 'status' + (warn ? ' warn' : ''), text); return d; }
+function loading() { app.innerHTML = ''; app.append(statusLine('載入中…')); }
+function loadFail() { app.innerHTML = ''; app.append(statusLine('資料暫時連不上，請稍後再按「返回」重新進入。', true)); }
+
+/* ---------- 密碼（存的是加密後的雜湊值，不是密碼本身） ---------- */
+async function hashPin(pin, salt) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(salt + ':' + pin));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+function newSalt() { return Math.random().toString(36).slice(2) + Date.now().toString(36); }
+function pinInput(ph) {
+  const i = el('input', 'pin'); i.type = 'password'; i.inputMode = 'numeric'; i.maxLength = 4;
+  i.autocomplete = 'off'; i.placeholder = ph || '4 位數字'; return i;
+}
+const validPin = v => /^\d{4}$/.test(v);
+let parentMode = false;
+
+/* ---------- 首頁：輸入名字 → 輸入密碼（第一次登入自己設定密碼） ---------- */
+async function renderHome() {
+  state = null; pads = []; curKid = null; parentMode = false;
+  setHeader('小三生大挑戰', null); loading();
+  await Store.ready;
+  app.innerHTML = '';
+  const logo = el('div', 'logo'); logo.innerHTML = `${ICON('sword', 44)}<span>小三生大挑戰</span>${ICON('sword', 44, 'flip')}`; logo.append(el('small', null, '一起出發打怪去')); app.append(logo);
+  let pick = null; try { pick = localStorage.getItem('lastAvatar'); } catch (e) {}
+  if (!AVATARS.some(a => a.id === pick)) pick = null;
+  const sel = el('div', 'loginsel');
+  sel.append(el('div', 'step', '① 選你的人偶'));
+  const g = el('div', 'avgrid mini');
+  AVATARS.forEach(a => {
+    const c = el('button', 'avcard' + (a.id === pick ? ' sel' : '')); c.type = 'button';
+    c.innerHTML = avatarSVG(a.id); c.append(el('span', null, a.name));
+    c.onclick = () => { pick = a.id; SFX.tap(); g.querySelectorAll('.avcard').forEach(x => x.classList.toggle('sel', x === c)); err.textContent = ''; };
+    g.append(c);
+  });
+  sel.append(g); app.append(sel);
+  const nameSec = el('div', 'loginsel namesec');
+  nameSec.append(el('div', 'step', '② 輸入你的名字'));
+  const f = el('form', 'namebar');
+  const name = el('input'); name.placeholder = '請輸入名字'; name.autocomplete = 'off'; name.maxLength = 12;
+  const go = el('button', 'primary', '出發 ▶'); go.type = 'submit';
+  f.append(name, go);
+  const err = el('div', 'err nameerr');
+  nameSec.append(f, err); app.append(nameSec);
+  const pl = el('div', 'parentlink'); const pb = el('button', null, '家長管理'); pb.type = 'button';
+  pb.onclick = renderParentLogin; pl.append(pb); app.append(pl);
+  f.onsubmit = async e => {
+    e.preventDefault(); err.textContent = '';
+    if (!pick) { err.textContent = '先選一個人偶喔！'; sel.scrollIntoView({ behavior: 'smooth' }); return; }
+    const n = name.value.trim(); if (!n) { err.textContent = '請輸入名字'; return; }
+    go.disabled = true;
+    try { localStorage.setItem('lastAvatar', pick); } catch (x) {}
+    try {
+      const k = (await Store.kids()).find(x => x.name === n);
+      if (k) { k.newAvatar = pick; renderPin(k); }
+      else renderPin({ name: n, grade: DEFAULT_GRADE, isNew: true, avatar: pick });
+    } catch (x) { err.textContent = '資料暫時連不上，請稍後再試'; go.disabled = false; }
+  };
+}
+
+function renderPin(k) {
+  const first = !k.pinHash;
+  setHeader('小三生大挑戰', renderHome);
+  app.innerHTML = '';
+  const f = el('form', 'login');
+  const bav = el('div', 'bigav'); bav.innerHTML = avatarSVG(k.newAvatar || k.avatar || 'knight'); f.append(bav);
+  f.append(el('h2', null, k.isNew ? `${k.name}，歡迎你！` : first ? `${k.name}，請設定你的密碼` : `${k.name}，請輸入密碼`));
+  if (first) f.append(el('p', 'hint', (k.isNew ? '這是你第一次來，' : '') + '請想一組 4 位數字當密碼，自己記住，不要告訴別人喔！' + (k.isNew ? '（名字打錯的話，按左上角「返回」重打）' : '')));
+  const p1 = pinInput(), p2 = pinInput('再輸入一次');
+  const l1 = el('label', null, first ? '新密碼' : '密碼'); l1.append(p1); f.append(l1);
+  if (first) { const l2 = el('label', null, '確認密碼'); l2.append(p2); f.append(l2); }
+  const err = el('div', 'err'); const go = el('button', 'primary', first ? '設定好了，進入' : '進入'); go.type = 'submit';
+  f.append(err, go); app.append(f); p1.focus();
+  f.onsubmit = async e => {
+    e.preventDefault(); err.textContent = '';
+    if (!validPin(p1.value)) { err.textContent = '密碼要 4 個數字'; return; }
+    go.disabled = true;
+    try {
+      if (first) {
+        if (p1.value !== p2.value) { err.textContent = '兩次輸入的不一樣，再試一次'; p2.value = ''; go.disabled = false; return; }
+        const salt = newSalt(), pinHash = await hashPin(p1.value, salt);
+        if (k.isNew) {
+          if ((await Store.kids()).some(x => x.name === k.name)) { err.textContent = '這個名字剛剛已經有人用了，請按「返回」重新登入'; return; }
+          renderKid(await Store.addKid(k.name, k.grade, salt, pinHash, k.avatar));
+        } else {
+          const av = k.newAvatar || k.avatar || 'knight'; delete k.newAvatar;
+          await Store.updateKid(k.id, { salt, pinHash, avatar: av });
+          Object.assign(k, { salt, pinHash, avatar: av }); renderKid(k);
+        }
+      } else if (k.pinHash === await hashPin(p1.value, k.salt)) {
+        if (k.newAvatar && k.newAvatar !== k.avatar) { k.avatar = k.newAvatar; try { await Store.updateKid(k.id, { avatar: k.avatar }); } catch (x) {} }
+        delete k.newAvatar; renderKid(k);
+      }
+      else { err.textContent = '密碼不對，再試一次。忘記了請找爸爸媽媽重設'; p1.value = ''; p1.focus(); go.disabled = false; }
+    } catch (x) { err.textContent = '資料暫時連不上，請稍後再試'; go.disabled = false; }
+  };
+}
+
+/* ---------- 選角色 ---------- */
+function renderAvatarPick(k, done) {
+  setHeader('選一個角色', k.isNew ? renderHome : () => renderKid(k));
+  app.innerHTML = '';
+  app.append(el('div', 'avpick-title', `${k.name}，選一個你喜歡的角色！`));
+  let pick = k.avatar || null;
+  const g = el('div', 'avgrid'); const go = el('button', 'primary', '就是它了！▶');
+  go.disabled = !pick;
+  AVATARS.forEach(a => {
+    const c = el('button', 'avcard' + (a.id === pick ? ' sel' : ''));
+    c.innerHTML = avatarSVG(a.id); c.append(el('span', null, a.name));
+    c.onclick = () => { pick = a.id; g.querySelectorAll('.avcard').forEach(x => x.classList.toggle('sel', x === c)); go.disabled = false; };
+    g.append(c);
+  });
+  app.append(g);
+  go.onclick = async () => {
+    if (!pick) return;
+    go.disabled = true;
+    k.avatar = pick;
+    if (!k.isNew) { try { await Store.updateKid(k.id, { avatar: pick }); } catch (e) {} }
+    done(k);
+  };
+  const w = el('div', 'avpick-go'); w.append(go); app.append(w);
+  window.scrollTo(0, 0);
+}
+
+/* ---------- 家長：輸入家長密碼（第一次使用會請你設定） ---------- */
+async function renderParentLogin() {
+  parentTab = 'kids';
+  setHeader('家長管理', renderHome); loading();
+  let ph;
+  try { ph = await Store.parentHash(); } catch (e) { loadFail(); return; }
+  app.innerHTML = '';
+  const f = el('form', 'login');
+  const first = !ph;
+  f.append(el('h2', null, first ? '設定家長密碼' : '輸入家長密碼'));
+  if (first) f.append(el('p', 'hint', '第一次使用，請設定一組 4 位數的家長密碼。'));
+  const p1 = pinInput(), p2 = pinInput('再輸入一次');
+  const l1 = el('label', null, '家長密碼'); l1.append(p1); f.append(l1);
+  if (first) { const l2 = el('label', null, '確認密碼'); l2.append(p2); f.append(l2); }
+  const err = el('div', 'err'); const go = el('button', 'primary', first ? '設定' : '進入'); go.type = 'submit';
+  f.append(err, go); app.append(f); p1.focus();
+  f.onsubmit = async e => {
+    e.preventDefault(); err.textContent = '';
+    if (!validPin(p1.value)) { err.textContent = '請輸入 4 位數字'; return; }
+    go.disabled = true;
+    try {
+      if (first) {
+        if (p1.value !== p2.value) { err.textContent = '兩次輸入不一樣'; go.disabled = false; return; }
+        await Store.setParentHash(await hashPin(p1.value, 'parent'));
+        renderParent();
+      } else if (ph === await hashPin(p1.value, 'parent')) renderParent();
+      else { err.textContent = '密碼不對'; p1.value = ''; go.disabled = false; }
+    } catch (x) { err.textContent = '儲存失敗，請再試一次'; go.disabled = false; }
+  };
+}
+
+/* ---------- 家長管理：小朋友 / 科目上架 ---------- */
+let parentTab = 'kids';
+async function renderParent() {
+  parentMode = true; curKid = null; state = null; pads = [];
+  setHeader('家長管理', renderHome); loading();
+  let kids;
+  try { [kids] = await Promise.all([Store.kids(), Store.catalog()]); } catch (e) { loadFail(); return; }
+  app.innerHTML = '';
+  const tabs = el('div', 'tabs');
+  [['kids', '小朋友'], ['catalog', '科目上架'], ['exams', '刪除考卷']].forEach(([id, label]) => {
+    const b = el('button', parentTab === id ? 'on' : '', label);
+    b.onclick = () => { parentTab = id; renderParent(); };
+    tabs.append(b);
+  });
+  app.append(tabs);
+  if (parentTab === 'kids') parentKids(kids); else if (parentTab === 'exams') parentExams(); else parentCatalog();
+  app.append(statusLine(Store.db ? '資料存在雲端，換一台裝置登入同一個 Claude 帳號也看得到。' : '目前資料只存在這台裝置的瀏覽器裡。'));
+  window.scrollTo(0, 0);
+}
+
+function parentKids(kids) {
+  app.append(el('h3', null, '小朋友'));
+  const list = el('div', 'plist');
+  if (!kids.length) list.append(el('div', 'empty', '還沒有小朋友。小朋友第一次在登入畫面輸入名字時，會自動建立。'));
+  kids.forEach((k, i) => {
+    const r = el('div', 'prow');
+    const av = el('span', 'avatar'); av.innerHTML = avatarSVG(k.avatar || 'knight');
+    const t = el('b', null, k.name);
+    const sub = el('small', null, k.grade + '・');
+    sub.append(k.pinHash ? '已設定密碼' : Object.assign(el('span', 'nopin'), { textContent: '還沒設定密碼（第一次登入時自己設定）' }));
+    t.append(sub);
+    const view = el('button', 'primary', '看成績'); view.onclick = () => renderKid(k);
+    const reset = el('button', null, '重設密碼');
+    const del = el('button', 'danger', '刪除');
+    r.append(av, t, view);
+    if (k.pinHash) r.append(reset);
+    r.append(del);
+    let armR = false;
+    reset.onclick = async () => {
+      if (!armR) { armR = true; reset.textContent = '確定重設？'; setTimeout(() => { armR = false; reset.textContent = '重設密碼'; }, 4000); return; }
+      reset.disabled = true;
+      try { await Store.updateKid(k.id, { pinHash: '', salt: '' }); renderParent(); }
+      catch (e) { reset.disabled = false; reset.textContent = '失敗，再試'; }
+    };
+    let armD = false;
+    del.onclick = async () => {
+      if (!armD) { armD = true; del.textContent = '確定刪除？'; setTimeout(() => { armD = false; del.textContent = '刪除'; }, 4000); return; }
+      del.disabled = true;
+      try { await Store.deleteKid(k.id); renderParent(); } catch (e) { del.disabled = false; del.textContent = '刪除失敗'; }
+    };
+    list.append(r);
+  });
+  app.append(list);
+  app.append(el('p', 'hint', '「重設密碼」會清掉舊密碼，小朋友下次登入時再自己設定新的。'));
+
+}
+
+function parentCatalog() {
+  app.append(el('p', 'hint', '關掉的科目或考卷，小朋友就看不到，重新打開就會再出現。要刪除考卷，請到「刪除考卷」分頁。'));
+  const cat = Store.cat;
+  const save = async () => {
+    try { await Store.setCatalog({ hiddenSubjects: cat.hiddenSubjects, hiddenExams: cat.hiddenExams, deletedExams: cat.deletedExams }); }
+    catch (e) { app.append(statusLine('儲存失敗，請再試一次', true)); }
+  };
+  const toggle = (arr, id) => { const i = arr.indexOf(id); if (i >= 0) arr.splice(i, 1); else arr.push(id); };
+  SUBJECTS.forEach(s => {
+    const exams = EXAMS.filter(e => e.subject === s.id && !cat.deletedExams.includes(e.id));
+    const box = el('div', 'cat');
+    const head = el('div', 'cathead');
+    const ic = el('span', 'ic', s.icon); ic.style.background = s.color;
+    const t = el('b', null, s.name); t.append(el('small', null, `${exams.length} 份考卷`));
+    const sw = el('button', 'switch');
+    const paint = () => { const on = !cat.hiddenSubjects.includes(s.id); sw.classList.toggle('on', on); box.classList.toggle('off', !on); };
+    sw.onclick = () => { toggle(cat.hiddenSubjects, s.id); paint(); save(); };
+    head.append(ic, t, sw); box.append(head);
+    if (exams.length) {
+      const ex = el('div', 'catexams');
+      exams.forEach(e => {
+        const row = el('div', 'catex');
+        const nm = el('span', null, e.title + ' '); nm.append(el('small', null, e.grade));
+        const es = el('button', 'switch sm');
+        const p2 = () => es.classList.toggle('on', !cat.hiddenExams.includes(e.id));
+        es.onclick = () => { toggle(cat.hiddenExams, e.id); p2(); save(); };
+        p2(); row.append(nm, es); ex.append(row);
+      });
+      box.append(ex);
+    }
+    paint(); app.append(box);
+  });
+}
+
+function parentExams() {
+  const cat = Store.cat;
+  app.append(el('p', 'hint', '按「刪除」再按一次「確定刪除？」，考卷就會從清單拿掉。刪錯了可以在最下面「已刪除」按「復原」。小朋友的成績紀錄都會保留。'));
+  const save = async () => {
+    try { await Store.setCatalog({ hiddenSubjects: cat.hiddenSubjects, hiddenExams: cat.hiddenExams, deletedExams: cat.deletedExams }); }
+    catch (e) { app.append(statusLine('儲存失敗，請再試一次', true)); }
+  };
+  const KIND = { words: '生字練習', review: '造詞區', reading: '閱讀測驗' };
+  SUBJECTS.forEach(s0 => {
+    const exams = EXAMS.filter(e => e.subject === s0.id && !cat.deletedExams.includes(e.id));
+    if (!exams.length) return;
+    const box = el('div', 'cat');
+    const head = el('div', 'cathead');
+    const ic = el('span', 'ic', s0.icon); ic.style.background = s0.color;
+    const t = el('b', null, s0.name); t.append(el('small', null, `${exams.length} 份`));
+    head.append(ic, t); box.append(head);
+    const ex = el('div', 'catexams');
+    exams.forEach(e => {
+      const row = el('div', 'catex');
+      const nm = el('span', null, e.title + ' '); nm.append(el('small', null, (KIND[e.kind] ? KIND[e.kind] + '・' : '') + e.grade));
+      const del = el('button', 'delbtn', '刪除'); let armed = false;
+      del.onclick = () => {
+        if (!armed) { armed = true; del.textContent = '確定刪除？'; del.classList.add('armed'); setTimeout(() => { armed = false; del.textContent = '刪除'; del.classList.remove('armed'); }, 4000); return; }
+        cat.deletedExams.push(e.id); save(); renderParent();
+      };
+      row.append(nm, del); ex.append(row);
+    });
+    box.append(ex); app.append(box);
+  });
+  const gone = EXAMS.filter(e => cat.deletedExams.includes(e.id));
+  app.append(el('h3', null, `已刪除（${gone.length}）`));
+  if (!gone.length) { app.append(el('div', 'empty', '目前沒有刪除的考卷')); return; }
+  const box = el('div', 'cat'); const ex = el('div', 'catexams'); ex.style.paddingLeft = '18px'; ex.style.borderTop = 'none';
+  gone.forEach(e => {
+    const row = el('div', 'catex');
+    const s0 = SUBJECTS.find(x => x.id === e.subject);
+    const nm = el('span', null, `${s0 ? s0.name + '・' : ''}${e.title} `); nm.append(el('small', null, e.grade));
+    const back = el('button', null, '復原');
+    back.onclick = () => { cat.deletedExams.splice(cat.deletedExams.indexOf(e.id), 1); save(); renderParent(); };
+    row.append(nm, back); ex.append(row);
+  });
+  box.append(ex); app.append(box);
+}
+
+function shownSubjects() { return SUBJECTS.filter(s => !Store.cat.hiddenSubjects.includes(s.id)); }
+function shownExams(grade, sid) { return EXAMS.filter(e => e.grade === grade && e.subject === sid && !Store.cat.hiddenExams.includes(e.id) && !Store.cat.deletedExams.includes(e.id)); }
+
+/* ---------- 小朋友：科目 ---------- */
+async function renderKid(kid) {
+  curKid = kid; state = null; pads = [];
+  setHeader(`${kid.name}（${kid.grade}）`, parentMode ? renderParent : renderHome); backBtn.textContent = parentMode ? '‹ 家長管理' : '登出'; loading();
+  let rec;
+  try { await Promise.all([mistChain, wrongChain, walletChain]).catch(() => {}); [rec] = await Promise.all([Store.records(kid.id), Store.catalog()]); } catch (e) { loadFail(); return; }
+  curKid.rec = rec;
+  app.innerHTML = '';
+  setHeader(`${kid.name}（${kid.grade}）`, parentMode ? renderParent : renderHome); backBtn.textContent = parentMode ? '‹ 家長管理' : '登出';
+  const done = Object.keys(rec).filter(k => !k.startsWith('_')).length;
+  const stars = Object.entries(rec).filter(([k]) => !k.startsWith('_')).reduce((a, [, r]) => a + Math.round((r.best || 0) / 10), 0);
+  const card = cardInfo(rec);
+  const hero = el('div', 'kid-hero');
+  const hav = el('div', 'heroav'); hav.innerHTML = avatarSVG(kid.avatar || 'knight');
+  const info = el('div', 'info'); info.append(el('div', 'nm', kid.name));
+  const st = el('div', 'stats'); const cg = el('span', 'chip gold'); cg.innerHTML = `${ICON('coin', 18)} ${walletOf().balance}`;
+  const cd = el('span', 'chip'); cd.innerHTML = `${ICON('star', 18)} 完成 ${done} 關`;
+  st.append(cg, cd, el('span', 'chip', kid.grade));
+  const E = earnedCoins(), LV = Math.floor(E / 30) + 1, XP = E % 30;
+  const lvb = el('div', 'lvbar'); lvb.innerHTML = `<span class="lv">Lv.${LV}</span><span class="xp"><i style="width:${XP / 30 * 100}%"></i></span><small>${XP} / 30 EXP</small>`;
+  info.append(lvb);
+  info.append(st); hero.append(hav, info);
+  if (!parentMode) { const bx = el('div', 'herobtns'); const shop = el('button', 'shopbtn'); shop.innerHTML = `${ICON('cart', 22)} 商城`; shop.onclick = () => renderShop(); const ch = el('button', null, '換角色'); ch.onclick = () => renderAvatarPick(kid, kk => renderKid(kk)); bx.append(shop, ch); hero.append(bx); }
+  app.append(hero);
+  const gained = syncAwards();
+  app.append(renderCardShelf(card));
+  if (!parentMode && (gained.diamond || gained.gold || gained.merit)) setTimeout(() => {
+    if (!document.querySelector('.kid-hero') || curKid !== kid) return;
+    showAwardPopup(gained);
+  }, 600);
+  const g = el('div', 'subjects');
+  const subs = shownSubjects();
+  if (!subs.length) app.append(el('div', 'empty', '目前還沒有上架的科目'));
+  subs.forEach(s => {
+    const list = shownExams(kid.grade, s.id);
+    const done = list.filter(e => rec[e.id]).length;
+    const b = el('button', 'subj'); b.style.background = s.color;
+    const ic = el('span', 'ic'); ic.innerHTML = monsterSVG(s.id);
+    const t = el('span', null, s.name);
+    const bar = el('div', 'bar'); const fi = el('i'); fi.style.width = (list.length ? done / list.length * 100 : 0) + '%'; bar.append(fi);
+    b.append(ic, t, el('span', 'boss', `關主：${(MONSTERS[s.id] || {}).name || ''}`), bar, el('small', null, list.length ? `完成 ${done} / ${list.length} 關` : '還沒有關卡')); b.onclick = () => renderSubject(s.id);
+    g.append(b);
+  });
+  app.append(g);
+  window.scrollTo(0, 0);
+}
+
+/* ---------- 科目：考卷列表 ---------- */
+function renderSubject(sid) {
+  state = null; pads = [];
+  const s = SUBJECTS.find(x => x.id === sid), kid = curKid, rec = kid.rec || {};
+  setHeader(`${kid.name}・${s.name}`, () => renderKid(kid));
+  app.innerHTML = '';
+  const list = shownExams(kid.grade, sid);
+  const groups = sid === 'chinese'
+    ? [['words', 'pencil|生字練習', '先描字，再看注音自己寫'], ['review', 'book|造詞區', '看注音，在語詞裡寫出生字'], ['mistakes', 'skull|常錯區', '寫錯過的字會自動收集到這裡'], ['reading', 'book|閱讀測驗', '閱讀文章，回答問題']]
+    : sid === 'math'
+    ? [['drill', 'target|九九乘法闖關', '看題目，用數字鍵快速作答'], ['exam', 'sword|計算與應用題', '直式計算、應用題、公分和毫米']]
+    : [[null, null, null]];
+  if (sid !== 'chinese') { if (groups[0][0] === null) groups[0] = ['exam', 'sword|考卷與練習', '寫完會自動對答案']; groups.push(['wrongq', 'skull|常錯區', '答錯過的題目會自動收集到這裡，附上解釋']); }
+  groups.forEach(([kind, label, sub]) => {
+    const items = kind ? list.filter(e => (e.kind || 'exam') === kind) : list;
+    if (label) { const [ic, tx] = label.split('|'); const h = el('h2', 'kindtitle'); h.innerHTML = `<span class="ribbon">${ICON(ic, 26)}<span>${tx}</span></span>`; h.append(el('small', 'hint', sub)); app.append(h); }
+    if (kind === 'mistakes') { renderMistakeBox(); return; }
+    if (kind === 'wrongq') { renderWrongBox(sid); return; }
+    if (!items.length) { app.append(el('div', 'empty', kind ? '還沒有內容' : '這個科目還沒有考卷')); return; }
+    const box = el('div', 'exams');
+    items.forEach(ex => {
+      const r = rec[ex.id], isW = ex.kind === 'words', isD = ex.kind === 'drill';
+      const b = el('button', 'examrow' + (r ? ' cleared' : '')); b.dataset.n = items.indexOf(ex) + 1;
+      const t = el('b', null, ex.title);
+      if (isW) t.append(el('span', 'meta', `${ex.words.length} 個字・每字寫對加 10 分` + (r ? `・練習過 ${r.attempts} 次・最高 ${r.best} 分・最近 ${r.date}` : '')));
+      else if (isD) t.append(el('span', 'meta', `${ex.count} 題・每題 ${ex.per || 2} 分` + (r ? `・玩過 ${r.attempts} 次・最高 ${r.best} 分` : '')));
+      else if (r) t.append(el('span', 'meta', `考過 ${r.attempts} 次・最高 ${r.best} 分・最近 ${r.date}`));
+      b.append(t);
+      if (isW) b.append(el('span', 'badge ' + (r ? 'done' : 'todo'), r ? `${r.score} / ${ex.words.length * 10} 分` : '未練習'));
+      else b.append(el('span', 'badge ' + (r ? 'done' : 'todo'), r ? `${r.score} 分` : '未考'));
+      b.append(el('span', 'go', r ? '再玩一次 ▶' : '開始 ▶'));
+      b.onclick = () => isW ? renderWords(ex) : ex.kind === 'drill' ? renderDrill(ex) : renderExam(ex);
+      box.append(b);
+    });
+    app.append(box);
+  });
+  window.scrollTo(0, 0);
+}
+
+/* ---------- 錯題解釋與常錯區（各科） ---------- */
+let wrongChain = Promise.resolve();
+const PLACE = ['個位', '十位', '百位', '千位', '萬位'];
+function vertSteps(q) {
+  const T = String(q.top).split('').reverse().map(Number), B = String(q.bot).split('').reverse().map(Number), n = Math.max(T.length, B.length), out = [];
+  let c = 0;
+  for (let i = 0; i < n; i++) {
+    const t = T[i] || 0, b = B[i] || 0;
+    if (q.op === '+') {
+      const sum = t + b + c, txt = `${PLACE[i]}：${t}＋${b}${c ? '＋1（進位）' : ''}＝${sum}`;
+      c = sum >= 10 ? 1 : 0;
+      out.push(c ? `${txt}，寫 ${sum % 10}，進 1 到${PLACE[i + 1]}` : `${txt}，寫 ${sum}`);
+    } else {
+      let v = t - c, txt = `${PLACE[i]}：${t}${c ? '－1（被借走）' : ''}`;
+      if (v < b) { txt += `${c ? '後' : ' '}不夠減，向${PLACE[i + 1]}借 1，變成 ${v + 10}`; v += 10; c = 1; } else c = 0;
+      if (i === n - 1 && v - b === 0) txt += `，${v}－${b}＝0（最前面的 0 不用寫）`; else txt += `，${v}－${b}＝${v - b}`;
+      out.push(txt);
+    }
+  }
+  if (q.op === '+' && c) out.push(`最後的進位 1 寫在${PLACE[n]}`);
+  return out.join('；') + `。答案是 ${q.a}。`;
+}
+function drillEx(c) {
+  const add = Array(c.x).fill(c.y).join('＋');
+  if (c.mode === 'p') return `${c.x} × ${c.y} 就是 ${c.x} 個 ${c.y} 相加：${add} ＝ ${c.p}。`;
+  const known = c.mode === 'x' ? c.y : c.x;
+  return `想一想 ${known} 的乘法：哪一個數乘 ${known} 會等於 ${c.p}？${c.x} × ${c.y} ＝ ${c.p}，所以 □ ＝ ${c.ans}。`;
+}
+function explainText(it) {
+  const q = it.q || {}; let base;
+  if (it.vert) return vertSteps(q);
+  if (it.type === 'choice') base = it.tf ? `答案是「${q.a ? '○ 對' : '✕ 錯'}」。` : `正確答案是 ${CIRCLED[q.a]} ${q.opts[q.a]}。`;
+  else if (it.type === 'multi') base = '正確答案是 ' + q.a.map(k => CIRCLED[k] + q.opts[k]).join('、') + '。';
+  else if (q.parts) base = '正確答案是 ' + q.parts.map(p => p.a + ' ' + p.unit).join(' ') + '。';
+  else base = `正確答案是 ${[].concat(q.a)[0]}${q.unit ? ' ' + q.unit : ''}。`;
+  return q.ex ? base + ' ' + q.ex : base;
+}
+function snapOf(it) {
+  const q = it.q || {}, sub = state.ex.subject;
+  if (it.vert) return { sub, kind: 'vert', top: q.top, bot: q.bot, op: q.op, a: q.a };
+  if (it.type === 'choice') return it.tf ? { sub, kind: 'tf', q: q.q, a: q.a, ex: q.ex, img: q.img } : { sub, kind: 'choice', q: q.q, opts: q.opts, a: q.a, ex: q.ex, img: q.img };
+  if (it.type === 'multi') return { sub, kind: 'multi', q: q.q, opts: q.opts, a: q.a, ex: q.ex };
+  if (q.parts) return { sub, kind: 'parts', q: q.q, parts: q.parts, ex: q.ex };
+  return { sub, kind: 'text', q: q.q, a: q.a, unit: q.unit, ex: q.ex, num: q.num !== false };
+}
+function recordJudge(it, blank) {
+  if (it.judged || it.ok === null || !state || !state.ex) return;
+  it.judged = true;
+  if (it.ok === false && !it.expShown) { it.expShown = true; it.el.append(el('div', 'explain', '💡 解釋：' + explainText(it))); }
+  if (!curKid || !it.q) return;
+  if (state.ex.practice) { if (it.ok && it.q.key) bumpWrong([{ key: it.q.key, delta: -1 }]); return; }
+  if (it.ok === false && !blank) bumpWrong([{ key: `${state.ex.id}#${it.idx}`, delta: 1, snap: snapOf(it) }]);
+}
+function bumpWrong(changes) {
+  if (!curKid || !changes.length) return;
+  const m = JSON.parse(JSON.stringify((curKid.rec || {})._wrongq || { items: {} }));
+  changes.forEach(({ key, delta, snap }) => {
+    const it = m.items[key] || (snap ? { ...snap, key, count: 0 } : null);
+    if (!it) return;
+    it.count += delta; if (delta > 0) it.last = today();
+    if (it.count <= 0) delete m.items[key]; else m.items[key] = it;
+  });
+  curKid.rec = { ...(curKid.rec || {}), _wrongq: m };
+  const snapM = JSON.parse(JSON.stringify(m)), kidId = curKid.id;
+  wrongChain = wrongChain.then(() => Store.setWrong(kidId, snapM)).catch(() => {});
+}
+function wrongList(sid) {
+  return Object.values(((curKid && curKid.rec) || {})._wrongq?.items || {}).filter(x => x.sub === sid)
+    .sort((a, b) => b.count - a.count || String(b.last).localeCompare(String(a.last)));
+}
+function renderWrongBox(sid) {
+  const ml = wrongList(sid);
+  if (!ml.length) { app.append(el('div', 'empty', '目前沒有常錯的題目，繼續保持！')); return; }
+  const box = el('div', 'mistbox');
+  const list = el('div', 'wqlist');
+  ml.slice(0, 30).forEach(m => {
+    const r = el('div', 'wqrow');
+    const t = m.kind === 'vert' ? `${m.top} ${m.op === '+' ? '＋' : '－'} ${m.bot}` : (m.q || '').replace(/\n/g, ' ');
+    r.append(el('span', 'wqt', t.length > 46 ? t.slice(0, 46) + '…' : t), el('span', 'mn', `錯 ${m.count} 次`));
+    list.append(r);
+  });
+  if (ml.length > 30) list.append(el('div', 'hint', `……還有 ${ml.length - 30} 題`));
+  box.append(list);
+  box.append(el('p', 'hint', '練習時第一次就答對，錯的次數會減 1；減到 0 就會離開常錯區。'));
+  const go = el('button', 'primary', `練習常錯題（${Math.min(ml.length, 20)} 題）›`);
+  go.onclick = () => renderExam(buildWrongExam(sid, ml.slice(0, 20)));
+  box.append(go); app.append(box);
+}
+function buildWrongExam(sid, ml) {
+  const pick = k => ml.filter(m => m.kind === k).map(m => ({ ...m, key: m.key }));
+  const secs = [];
+  const tf = pick('tf'), ch = pick('choice'), mu = pick('multi'), tx = pick('text').map(m => ({ ...m, q: m.q.includes('□') || m.q.includes('＿＿') ? m.q : m.q })), pa = pick('parts'), ve = pick('vert');
+  if (tf.length) secs.push({ type: 'tf', title: '是非題', points: 1, items: tf });
+  if (ch.length) secs.push({ type: 'choice', title: '選擇題', points: 1, items: ch });
+  if (mu.length) secs.push({ type: 'multi', title: '勾選題', points: 1, items: mu });
+  if (tx.length || pa.length) secs.push({ type: 'calc', title: '計算題', points: 1, nowork: true, items: tx.concat(pa) });
+  if (ve.length) secs.push({ type: 'vert', title: '直式計算', points: 1, items: ve });
+  return { id: '_wrong_' + sid, subject: sid, grade: curKid.grade, title: '常錯題練習', practice: true, sections: secs };
+}
+
+/* ---------- 獎勵卡片 ---------- */
+/* ---------- 錢包：金幣、卡片、提示券 ---------- */
+let walletChain = Promise.resolve();
+const CARD_KEY = { 3: 'diamond', 2: 'gold', 1: 'merit' };
+function walletRaw() {
+  const w = JSON.parse(JSON.stringify(((curKid && curKid.rec) || {})._wallet || {}));
+  w.cards = Object.assign({ diamond: 0, gold: 0, merit: 0 }, w.cards || {});
+  w.awarded = Object.assign({ merit: [], gold: [], dBonus: 0 }, w.awarded || {});
+  w.extraCoins = w.extraCoins || 0; w.spentCoins = w.spentCoins || 0; w.tickets = w.tickets || 0;
+  return w;
+}
+function earnedCoins() {
+  return Object.entries((curKid && curKid.rec) || {}).filter(([k]) => !k.startsWith('_')).reduce((a, [, r]) => a + Math.round((r.best || 0) / 10), 0);
+}
+function walletOf() { const w = walletRaw(); w.balance = earnedCoins() + w.extraCoins - w.spentCoins; return w; }
+function saveWallet(w) {
+  delete w.balance; curKid.rec = { ...(curKid.rec || {}), _wallet: w };
+  const snap = JSON.parse(JSON.stringify(w)), kidId = curKid.id;
+  walletChain = walletChain.then(() => Store.setWallet(kidId, snap)).catch(() => {});
+}
+// 每份考卷第一次達到：80 分以上 → 優點卡；100 分 → 金卡；每累積 5 份 100 分 → 鑽石卡
+function syncAwards() {
+  const w = walletRaw(), got = { diamond: 0, gold: 0, merit: 0 };
+  let c100 = 0;
+  Object.entries(curKid.rec || {}).filter(([k]) => !k.startsWith('_')).forEach(([id, r]) => {
+    const pct = examPercent(id, r); if (pct === null) return;
+    if (pct >= 80 && !w.awarded.merit.includes(id)) { w.awarded.merit.push(id); w.cards.merit++; got.merit++; }
+    if (pct >= 100) { c100++; if (!w.awarded.gold.includes(id)) { w.awarded.gold.push(id); w.cards.gold++; got.gold++; } }
+  });
+  const d = Math.floor(c100 / 5) - w.awarded.dBonus;
+  if (d > 0) { w.awarded.dBonus += d; w.cards.diamond += d; got.diamond += d; }
+  if (got.diamond || got.gold || got.merit) saveWallet(w);
+  return got;
+}
+function showAwardPopup(got) {
+  const o = el('div', 'gameover cardpop'), b = el('div', 'gobox');
+  b.append(el('div', 'gotitle win', '🎉 恭喜獲得新卡片！'));
+  const row = el('div', 'cardrow popcards');
+  [['diamond', 3], ['gold', 2], ['merit', 1]].forEach(([k, t]) => { if (got[k]) { const c = cardEl(t, true, true); c.append(el('div', 'rccount', `+ ${got[k]}`)); row.append(c); } });
+  row.style.gridTemplateColumns = `repeat(${row.children.length}, minmax(0, 1fr))`;
+  b.append(row);
+  const ok = el('button', 'primary', '太棒了！'); ok.onclick = () => o.remove();
+  const w = el('div', 'wpbtns'); w.append(ok); b.append(w); o.append(b); document.body.append(o);
+  SFX.honor(); celebrate(100, ' ', ' '); setTimeout(() => document.querySelectorAll('.levelup').forEach(x => x.remove()), 30);
+}
+
+/* ---------- 商城 ---------- */
+const SHOP = [
+  { id: 'm2g', from: 'merit', n: 3, to: 'gold', label: '3 張優點卡 → 1 張金卡' },
+  { id: 'g2d', from: 'gold', n: 2, to: 'diamond', label: '2 張金卡 → 1 張鑽石卡' },
+  { id: 'd2c', from: 'diamond', n: 1, coins: 300, label: '1 張鑽石卡 → 300 金幣' },
+  { id: 'c2t', cost: 100, ticket: true, label: '100 金幣 → 1 張「看答案券」' }
+];
+function renderShop(msgText) {
+  state = null; pads = [];
+  setHeader(`${curKid.name}・商城`, () => renderKid(curKid));
+  app.innerHTML = '';
+  const w = walletOf();
+  const top = el('div', 'shoptop');
+  const t1 = el('div', 'shoptitle'); t1.innerHTML = `${ICON('cart', 34)} 小三生商城`;
+  const b1 = el('div', 'shopbal'); b1.innerHTML = `${ICON('coin', 22)} ${w.balance}`;
+  const b2 = el('div', 'shopbal t'); b2.innerHTML = `${ICON('ticket', 22)} 看答案券 × ${w.tickets}`;
+  top.append(t1, b1, b2);
+  app.append(top);
+  const inv = el('div', 'cardrow shopinv');
+  [['diamond', 3], ['gold', 2], ['merit', 1]].forEach(([k, t]) => { const c = cardEl(t, w.cards[k] > 0, true); c.append(el('div', 'rccount', `× ${w.cards[k]}`)); inv.append(c); });
+  app.append(inv);
+  if (msgText) app.append(el('div', 'shopmsg', msgText));
+  const list = el('div', 'shoplist');
+  SHOP.forEach(it => {
+    const row = el('div', 'shoprow');
+    const icon = it.ticket ? 'ticket' : CARDS[{ merit: 1, gold: 2, diamond: 3 }[it.from]].icon;
+    const can = it.ticket ? w.balance >= it.cost : w.cards[it.from] >= it.n;
+    const si = el('span', 'shopicon'); si.innerHTML = ICON(icon, 40); row.append(si, el('b', null, it.label));
+    const btn = el('button', can ? 'primary' : '', can ? '兌換' : (it.ticket ? '金幣不夠' : '卡片不夠')); btn.disabled = !can;
+    btn.onclick = () => {
+      const ww = walletRaw(), bal = walletOf().balance;
+      if (it.ticket) { if (bal < it.cost) return; ww.spentCoins += it.cost; ww.tickets++; }
+      else { if (ww.cards[it.from] < it.n) return; ww.cards[it.from] -= it.n; if (it.to) ww.cards[it.to]++; if (it.coins) ww.extraCoins += it.coins; }
+      saveWallet(ww); SFX.coin(); SFX.coin(.15);
+      renderShop(`✅ 兌換成功：${it.label}`);
+    };
+    row.append(btn); list.append(row);
+  });
+  app.append(list);
+  app.append(el('p', 'hint shophint', '怎麼拿卡片：每份考卷第一次考到 80 分以上得 1 張優點卡、考到 100 分得 1 張金卡，每累積 5 份 100 分再送 1 張鑽石卡。看答案券在作答時按「💡 看答案」使用，每張可以看一題的答案。'));
+  window.scrollTo(0, 0);
+}
+function useHint() {
+  if (!state || state.graded) return;
+  const it = state.items.find(i => !i.done && !i.hinted && ['choice', 'text', 'numset'].includes(i.type));
+  if (!it) { flashMsg('沒有可以看答案的題目了'); return; }
+  const w = walletRaw(), bal = walletOf().balance;
+  if (w.tickets > 0) w.tickets--;
+  else if (bal >= 100) w.spentCoins += 100;
+  else { flashMsg('金幣不夠 100，也沒有看答案券喔！'); SFX.wrong(); return; }
+  saveWallet(w); it.hinted = true; SFX.coin();
+  let txt;
+  if (it.type === 'choice') { it.opts[it.answer].classList.add('hintmark'); txt = it.tf ? (it.answer === 0 ? '○' : '✕') : `${CIRCLED[it.answer]}`; }
+  else if (it.vert) txt = it.answer.join('');
+  else if (it.type === 'numset') txt = it.q.parts.map(p => p.a + ' ' + p.unit).join(' ');
+  else txt = [].concat(it.answer)[0];
+  { const hbx = el('div', 'hintbox'); hbx.innerHTML = `${ICON('ticket', 20)} 答案是：${txt}`; it.el.append(hbx); }
+  it.el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  updateHintBtn();
+}
+function updateHintBtn() {
+  const b = document.querySelector('.hintbtn'); if (!b || !curKid) return;
+  const w = walletOf(); b.innerHTML = w.tickets > 0 ? `${ICON('bulb', 16)} 看答案 券×${w.tickets}` : `${ICON('bulb', 16)} 看答案 ${ICON('coin', 14)}100`;
+}
+function flashMsg(t) { const f = el('div', 'wpflash small', t); document.body.append(f); setTimeout(() => f.remove(), 1400); }
+
+const CARDS = {
+  3: { cls: 'diamond', icon: 'gem', name: '鑽石大神卡', joke: '腦袋快到 Wi-Fi 都追不上，怪獸看到你都自動投降！', rule: '每累積 5 份 100 分送 1 張' },
+  2: { cls: 'gold', icon: 'medal', name: '金光閃閃卡', joke: '聰明到發光，關主都要戴墨鏡才敢看你！', rule: '每份考卷第一次考 100 分' },
+  1: { cls: 'merit', icon: 'star', name: '優點認證卡', joke: '努力的樣子帥到掉渣，連橡皮擦都為你鼓掌！', rule: '每份考卷第一次考 80 分以上' }
+};
+function examPercent(id, r) {
+  const ex = EXAMS.find(e => e.id === id); if (!ex || !r) return null;
+  if (ex.kind === 'words') return Math.round((r.best || 0) / (ex.words.length * 10) * 100);
+  return r.best || 0;
+}
+function cardInfo(rec) {
+  const pcts = Object.entries(rec || {}).filter(([k]) => !k.startsWith('_')).map(([k, r]) => examPercent(k, r)).filter(x => x !== null);
+  const c100 = pcts.filter(x => x >= 100).length, c90 = pcts.filter(x => x >= 90).length, c80 = pcts.filter(x => x >= 80 && x < 90).length;
+  let tier = 0;
+  if (c100 >= 5) tier = 3;
+  else if (c100 >= 1 || c90 >= 10) tier = 2;
+  else if (c90 >= 1 || c80 >= 1) tier = 1;
+  return { tier, c100, c90, c80 };
+}
+function cardEl(t, owned, small) {
+  const c = CARDS[t], d = el('div', `rcard ${c.cls}${owned ? '' : ' locked'}${small ? ' small' : ''}`);
+  d.innerHTML = [1, 2, 3, 4, 5, 6].map(i => `<span class="st s${i}">${ICON('star', 16)}</span>`).join('');
+  const ic = el('div', 'rcicon'); ic.innerHTML = ICON(owned ? c.icon : 'lock', small ? 46 : 84);
+  d.append(ic, el('div', 'rcname', c.name), el('div', 'rcjoke', owned ? c.joke : '還沒拿到喔！'), el('div', 'rcrule', c.rule));
+  return d;
+}
+function renderCardShelf(info) {
+  const w = walletOf(), box = el('div', 'cardshelf');
+  const h = el('div', 'shelfh'); const hb = el('b'); hb.innerHTML = `${ICON('medal', 22)} 我的獎勵卡`; h.append(hb, el('small', null, `100 分 ${info.c100} 份・90 分以上 ${info.c90} 份`));
+  box.append(h);
+  const row = el('div', 'cardrow');
+  [['diamond', 3], ['gold', 2], ['merit', 1]].forEach(([k, t]) => { const c = cardEl(t, w.cards[k] > 0, true); c.append(el('div', 'rccount', `× ${w.cards[k]}`)); row.append(c); });
+  box.append(row);
+  return box;
+}
+function showCardPopup(t) {
+  const o = el('div', 'gameover cardpop'), b = el('div', 'gobox');
+  b.append(el('div', 'gotitle win', '🎉 恭喜獲得新卡片！'), cardEl(t, true, false));
+  const ok = el('button', 'primary', '太棒了！'); ok.onclick = () => o.remove();
+  const w = el('div', 'wpbtns'); w.append(ok); b.append(w); o.append(b); document.body.append(o);
+  SFX.win(); celebrate(100, ' ', ' ');
+  setTimeout(() => document.querySelectorAll('.levelup').forEach(x => x.remove()), 30);
+}
+
+/* ---------- 玩家被打倒 ---------- */
+function showGameOver(retry) {
+  NumKey.close();
+  const o = el('div', 'gameover'), box = el('div', 'gobox');
+  box.innerHTML = `<div class="goav">${avatarSVG(curKid && curKid.avatar)}</div>`;
+  box.append(el('div', 'gotitle', '💀 你被打倒了！'), el('div', 'gosub', '愛心用完了，這一關不能繼續。休息一下，再挑戰一次吧！'));
+  const btns = el('div', 'wpbtns'); const again = el('button', 'primary', '再挑戰一次 ↺'), back = el('button', null, '返回');
+  again.onclick = () => { o.remove(); retry(); }; back.onclick = () => { o.remove(); backTo && backTo(); };
+  btns.append(back, again); box.append(btns); o.append(box); document.body.append(o);
+}
+
+/* ---------- 慶祝動畫 ---------- */
+function celebrate(score, label, shown) {
+  const colors = ['#ffc83d', '#25b04c', '#2f80ed', '#e5484d', '#b06cff', '#4fc3ff'];
+  const n = score >= 90 ? 70 : score >= 60 ? 35 : 0;
+  for (let i = 0; i < n; i++) {
+    const c = el('div', 'confetti'); c.style.left = Math.random() * 100 + 'vw'; c.style.background = colors[i % colors.length];
+    c.style.animationDuration = (1.6 + Math.random() * 1.6) + 's'; c.style.animationDelay = Math.random() * .5 + 's';
+    document.body.append(c); setTimeout(() => c.remove(), 4000);
+  }
+  const box = el('div', 'levelup');
+  box.append(el('div', 'big', label || (score >= 90 ? '🎉 太厲害了！' : score >= 60 ? '👍 過關！' : '💪 再挑戰一次！')), el('div', 'sc', shown || `${score} 分`));
+  document.body.append(box); setTimeout(() => box.remove(), 2200);
+  box.onclick = () => box.remove();
+}
+
+/* ---------- 常錯區：記錄寫錯的字 ---------- */
+let mistChain = Promise.resolve();
+function bumpMistakes(changes) {
+  if (!curKid || !changes.length) return;
+  const m = JSON.parse(JSON.stringify((curKid.rec || {})._mistakes || { items: {} }));
+  changes.forEach(({ c, z, w, delta }) => {
+    const it = m.items[c] || { c, z, w: w || '○', count: 0, total: 0 };
+    it.count += delta; if (delta > 0) { it.total = (it.total || 0) + delta; it.last = today(); }
+    if (z) it.z = z; if (w && w.includes('○') && w.length > 1) it.w = w;
+    if (it.count <= 0) delete m.items[c]; else m.items[c] = it;
+  });
+  curKid.rec = { ...(curKid.rec || {}), _mistakes: m };
+  const snap = JSON.parse(JSON.stringify(m)), kidId = curKid.id;
+  mistChain = mistChain.then(() => Store.setMistakes(kidId, snap)).catch(() => {});
+}
+function mistakeList() {
+  return Object.values(((curKid && curKid.rec) || {})._mistakes?.items || {}).sort((a, b) => b.count - a.count || String(b.last).localeCompare(String(a.last)));
+}
+
+function renderMistakeBox() {
+  const ml = mistakeList();
+  if (!ml.length) { app.append(el('div', 'empty', '目前沒有常錯的字，繼續保持！')); return; }
+  const box = el('div', 'mistbox');
+  const grid = el('div', 'mistgrid');
+  ml.forEach(m => {
+    const c = el('div', 'mistch'); c.append(el('div', 'mc', m.c), el('div', 'mz', m.z || ''), el('div', 'mw', (m.w || '').replace('○', m.c)), el('div', 'mn', `錯 ${m.count} 次`));
+    grid.append(c);
+  });
+  box.append(grid);
+  const go = el('button', 'primary', `練習常錯字（${ml.length} 個）›`);
+  go.onclick = () => renderWords({ id: '_mistakes_practice', mistakes: true, subject: 'chinese', title: '常錯字練習', words: ml.map(m => ({ c: m.c, z: m.z, w: m.w && m.w.includes('○') ? m.w : '○' })) });
+  box.append(go); app.append(box);
+}
+
+/* ---------- 九九乘法闖關 ---------- */
+function renderDrill(set) {
+  const s = SUBJECTS.find(x => x.id === set.subject);
+  state = null; pads = [];
+  setHeader(`${curKid.name}・${s.name}・${set.title}`, () => renderKid(curKid).then(() => renderSubject(set.subject)));
+  // 出題：不重複，填空題約三分之一
+  const pool = [];
+  set.tables.forEach(a => { for (let b = 1; b <= 9; b++) pool.push([a, b]); });
+  for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+  // 題數不夠時再洗一輪（第二輪用 □ 填空，避免完全重複）
+  let seq = pool.slice();
+  while (seq.length < set.count) { const more = pool.slice(); for (let i = more.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [more[i], more[j]] = [more[j], more[i]]; } seq = seq.concat(more); }
+  const qs = seq.slice(0, set.count).map(([a, b], i) => {
+    const swap = Math.random() < .5; const x = swap ? b : a, y = swap ? a : b;
+    const second = i >= pool.length;
+    const mode = (set.blank && i % 3 === 2) || second ? (Math.random() < .5 ? 'x' : 'y') : 'p';
+    return { x, y, p: x * y, mode, ans: mode === 'p' ? x * y : mode === 'x' ? x : y, tries: 0 };
+  });
+  const total = qs.length, queue = qs.slice();
+  let done = 0, firstOK = 0, pts = 0, cur = null, typed = '', t0 = 0, busy = false; const LIMIT = 10;
+  app.innerHTML = '';
+  let over = false;
+  const wb = createBattle({ subject: 'math', maxHP: total, kidAvatar: curKid.avatar, kidName: curKid.name,
+    onDeath: () => { over = true; busy = true; cancelAnimationFrame(raf); showGameOver(() => renderDrill(set)); } });
+  const view = el('div', 'drill'); app.append(wb.el, view);
+  const bar = el('div', 'wpbar'); const tr = el('div', 'track'); const fl = el('div', 'fill'); tr.append(fl);
+  const cnt = el('span'), pt = el('span', 'wppts'); bar.append(cnt, tr, pt);
+  const card = el('div', 'dcard'); const qEl = el('div', 'dq'); const msg = el('div', 'dmsg'); card.append(qEl, msg);
+  const timer = el('div', 'dtimer'); const tfill = el('i'); timer.append(tfill);
+  const pad = el('div', 'dpad');
+  ['1','2','3','4','5','6','7','8','9','⌫','0','確定'].forEach(t => { const b = el('button', t === '確定' ? 'primary' : t === '⌫' ? 'bs' : '', t); b.type = 'button'; b.onclick = () => key(t); pad.append(b); });
+  view.append(bar, card, timer, pad);
+  function show() {
+    const box = `<span class="dbox">${typed || '?'}</span>`;
+    qEl.innerHTML = cur.mode === 'p' ? `${cur.x} × ${cur.y} = ${box}` : cur.mode === 'x' ? `${box} × ${cur.y} = ${cur.p}` : `${cur.x} × ${box} = ${cur.p}`;
+  }
+  function stat() {
+    cnt.textContent = `${done} / ${total}`; fl.style.width = (done / total * 100) + '%'; pt.innerHTML = `${ICON('coin', 18)} ${pts}`;
+  }
+  let raf = 0;
+  function tick() {
+    if (!view.isConnected) return;
+    const e = (Date.now() - t0) / 1000; tfill.style.width = Math.max(0, 100 - e / LIMIT * 100) + '%'; tfill.className = e > LIMIT * .65 ? 'slow' : '';
+    if (e >= LIMIT && !busy) { timeUp(); return; }
+    raf = requestAnimationFrame(tick);
+  }
+  function timeUp() {
+    busy = true; wb.miss('timeout');
+    if (!cur.tries) { const qt = cur.mode === 'p' ? `${cur.x} × ${cur.y} = □` : cur.mode === 'x' ? `□ × ${cur.y} = ${cur.p}` : `${cur.x} × □ = ${cur.p}`;
+      bumpWrong([{ key: `drill:${cur.mode}:${cur.x}x${cur.y}`, delta: 1, snap: { sub: 'math', kind: 'text', q: qt, a: String(cur.ans), unit: '', ex: drillEx(cur), num: true } }]); }
+    cur.tries++; queue.splice(Math.min(3, queue.length), 0, cur);
+    msg.innerHTML = ''; msg.append(`⏰ 時間到！答案是 ${cur.ans}`, el('div', 'explain', '💡 ' + drillEx(cur))); msg.className = 'dmsg bad';
+    card.classList.add('bad'); setTimeout(() => { card.classList.remove('bad'); if (!over) next(); }, 3200);
+  }
+  function next() {
+    if (!queue.length) return finish();
+    cur = queue.shift(); typed = ''; msg.textContent = cur.tries ? '再試一次這題！' : ''; msg.className = 'dmsg';
+    busy = false; show(); stat(); t0 = Date.now(); cancelAnimationFrame(raf); tick();
+  }
+  function key(t) {
+    if (busy) return; SFX.tap();
+    if (t === '⌫') { typed = typed.slice(0, -1); show(); return; }
+    if (t === '確定') { if (typed) judge(); return; }
+    if (typed.length < 2) { typed += t; show(); if (String(cur.ans).length === typed.length && cur.mode === 'p' && typed.length === String(cur.ans).length) {} }
+  }
+  function judge() {
+    busy = true; const sec = (Date.now() - t0) / 1000; cancelAnimationFrame(raf);
+    if (+typed === cur.ans) {
+      done++; wb.hit(1, qEl, !!cur.tries);
+      if (!cur.tries) { firstOK++; const g = set.per || 2; pts += g; msg.textContent = sec <= 3 ? `⚡ 快攻！+${g} 分` : `答對了！+${g} 分`; }
+      else msg.textContent = '答對了！';
+      msg.className = 'dmsg ok'; card.classList.add('good'); setTimeout(() => { card.classList.remove('good'); if (!over) next(); }, 650);
+    } else {
+      wb.miss();
+      if (!cur.tries) { const qt = cur.mode === 'p' ? `${cur.x} × ${cur.y} = □` : cur.mode === 'x' ? `□ × ${cur.y} = ${cur.p}` : `${cur.x} × □ = ${cur.p}`;
+        bumpWrong([{ key: `drill:${cur.mode}:${cur.x}x${cur.y}`, delta: 1, snap: { sub: 'math', kind: 'text', q: qt, a: String(cur.ans), unit: '', ex: drillEx(cur), num: true } }]); }
+      cur.tries++; queue.splice(Math.min(3, queue.length), 0, cur);
+      msg.innerHTML = ''; msg.append(`答案是 ${cur.ans}，等一下再考你一次！`, el('div', 'explain', '💡 ' + drillEx(cur))); msg.className = 'dmsg bad';
+      card.classList.add('bad'); setTimeout(() => { card.classList.remove('bad'); if (!over) next(); }, 3200);
+    }
+    stat();
+  }
+  function finish() {
+    cancelAnimationFrame(raf);
+    const score = Math.min(100, pts);
+    view.innerHTML = '';
+    const d = el('div', 'wpdone');
+    d.append(el('div', 'big', '🎉 闖關完成！'), el('div', 'wpscore', `${score} 分`), el('div', null, `${total} 題中，第一次就答對 ${firstOK} 題`));
+    d.append(el('div', 'hint', `每題 ${set.per || 2} 分，第一次就答對才得分。`));
+    view.append(d);
+    const btns = el('div', 'wpbtns');
+    const again = el('button', null, '再玩一次'); again.onclick = () => renderDrill(set);
+    const back = el('button', 'primary', '回到數學'); back.onclick = () => backTo();
+    btns.append(again, back); view.append(btns);
+    setTimeout(() => celebrate(score), 50);
+    Store.saveRecord(curKid.id, set.id, score, true).catch(() => view.append(statusLine('紀錄沒存成功', true)));
+  }
+  next();
+  window.scrollTo(0, 0);
+}
+
+/* ---------- 生字練習：每個字先描一次，再看注音自己寫，對答案 ---------- */
+function renderWords(set) {
+  const s = SUBJECTS.find(x => x.id === set.subject);
+  state = null; pads = [];
+  setHeader(`${curKid.name}・${s.name}・${set.title}`, () => renderKid(curKid).then(() => renderSubject(set.subject)));
+  const queue = set.words.map((w, i) => ({ ...w, i, tries: 0 }));
+  const total = queue.length; let doneCount = 0; const firstWrong = new Set();
+  let cur = null, step = 1, pts = 0;
+  const view = el('div', 'wp'); app.innerHTML = '';
+  const wb = createBattle({ subject: set.mistakes ? '_mist' : set.subject, maxHP: total, kidAvatar: curKid.avatar, kidName: curKid.name,
+    onDeath: () => { view.querySelectorAll('button').forEach(b => b.disabled = true); showGameOver(() => renderWords(set)); } });
+  app.append(wb.el, view);
+  const pad = { item: { strokes: [] } };
+  function next() {
+    if (!queue.length) return finish();
+    cur = queue.shift(); step = 1; draw();
+  }
+  function wordHTML(w) {
+    const wrap = el('div', 'wpword');
+    w.w.split('○').forEach((part, k, arr) => { wrap.append(part); if (k < arr.length - 1) wrap.append(el('span', 'blank')); });
+    return wrap;
+  }
+  function draw() {
+    view.innerHTML = '';
+    const bar = el('div', 'wpbar'); const tr = el('div', 'track'); const fl = el('div', 'fill');
+    fl.style.width = (doneCount / total * 100) + '%'; tr.append(fl);
+    bar.append(el('span', null, `${doneCount} / ${total}`), tr, (() => { const x = el('span', 'wppts'); x.innerHTML = `${ICON('coin', 18)} ${pts}`; return x; })()); view.append(bar);
+    view.append(el('div', 'wpstep' + (step === 2 ? ' s2' : ''), step === 1 ? '步驟 1：照著淡淡的字描一描（不計分）' : (cur.tries ? '步驟 2：看注音，自己寫寫看（再練一次）' : '步驟 2：看注音，自己寫寫看（寫對加 10 分）')));
+    const q = el('div', 'wpq'); q.append(el('div', 'wpzy', cur.z), wordHTML(cur)); view.append(q);
+    const box = el('div', 'wpbox');
+    if (step === 1) box.append(el('div', 'ghost', cur.c));
+    const cv = el('canvas'); box.append(cv); view.append(box);
+    const d = drawable(cv, w => Math.max(w * 0.022, 3)); d.item = { strokes: [] }; pads = [d]; d.size();
+    const btns = el('div', 'wpbtns');
+    const undo = el('button', null, '上一筆'); undo.onclick = () => d.undo();
+    const clr = el('button', null, '清除'); clr.onclick = () => d.clear();
+    const go = el('button', 'primary', step === 1 ? '描好了，下一步 ▶' : '寫好了，對答案');
+    go.onclick = () => {
+      if (step === 1) { step = 2; draw(); return; }
+      check(d.item.strokes);
+    };
+    btns.append(undo, clr, go); view.append(btns);
+  }
+  function check(strokes) {
+    view.querySelector('.wpbtns').remove();
+    const off = document.createElement('canvas'); off.width = off.height = 240;
+    const c = off.getContext('2d'); c.fillStyle = '#fff'; c.fillRect(0, 0, 240, 240); paint(c, 240, 240, strokes, 6);
+    view.querySelector('.wpbox').remove();
+    const ck = el('div', 'wpcheck');
+    const mine = el('div'); const im = el('img'); im.src = off.toDataURL(); mine.append(im, el('div', null, '我寫的'));
+    const ans = el('div'); ans.append(el('div', 'ans', cur.c), el('div', null, '正確的字'));
+    ck.append(mine, ans); view.append(ck);
+    const btns = el('div', 'wpbtns');
+    const ok = el('button', 'primary', '寫對了 ✓'); const ng = el('button', null, '寫錯了，再練一次 ↺');
+    ok.onclick = () => { doneCount++; wb.hit(1, ok, !!cur.tries); if (!cur.tries) { pts += 10; flash('+10 分！'); if (set.mistakes) bumpMistakes([{ c: cur.c, delta: -1 }]); } next(); };
+    ng.onclick = () => { wb.miss(); if (!cur.tries) { firstWrong.add(cur.c); if (!set.mistakes) bumpMistakes([{ c: cur.c, z: cur.z, w: cur.w, delta: 1 }]); } cur.tries++; queue.push(cur); next(); };
+    btns.append(ng, ok); view.append(btns);
+  }
+  function flash(t) {
+    const f = el('div', 'wpflash', t); document.body.append(f); setTimeout(() => f.remove(), 900);
+  }
+  function finish() {
+    pads = []; view.innerHTML = '';
+    const score = pts;
+    setTimeout(() => celebrate(Math.round(pts / (total * 10) * 100), '🎉 練習完成！', `🪙 ${pts} 分`), 50);
+    const d = el('div', 'wpdone');
+    d.append(el('div', 'big', '🎉 練習完成！'));
+    d.append(el('div', 'wpscore', `得到 ${pts} 分（滿分 ${total * 10} 分）`));
+    d.append(el('div', null, `一共 ${total} 個字，第一次就寫對 ${total - firstWrong.size} 個`));
+    if (firstWrong.size) { d.append(el('div', null, '多練了幾次的字：')); d.append(el('div', 'chars', [...firstWrong].join(''))); }
+    view.append(d);
+    const btns = el('div', 'wpbtns');
+    const again = el('button', null, '再練一次'); again.onclick = () => renderWords(set);
+    const back = el('button', 'primary', '回到國語'); back.onclick = () => backTo();
+    btns.append(again, back); view.append(btns);
+    if (set.mistakes) { back.textContent = '回到國語'; d.append(el('div', 'hint', '第一次就寫對的字，常錯次數會減 1；減到 0 就會離開常錯區。')); }
+    else Store.saveRecord(curKid.id, set.id, score, true).catch(() => view.append(statusLine('紀錄沒存成功', true)));
+  }
+  next();
+  window.scrollTo(0, 0);
+}
+
+/* ---------- 手寫：共用畫圖 ---------- */
+function paint(c, w, h, list, lw) {
+  c.lineCap = 'round'; c.lineJoin = 'round'; c.strokeStyle = '#111'; c.lineWidth = lw;
+  list.forEach(s => {
+    c.beginPath();
+    s.forEach((p, i) => i ? c.lineTo(p[0] * w, p[1] * h) : c.moveTo(p[0] * w, p[1] * h));
+    if (s.length === 1) c.lineTo(s[0][0] * w + 0.5, s[0][1] * h);
+    c.stroke();
+  });
+}
+function drawable(cv, lwFn) {
+  const c = cv.getContext('2d');
+  const api = { item: { strokes: [] }, locked: () => false, drawing: null };
+  api.size = () => {
+    const r = cv.getBoundingClientRect(), d = window.devicePixelRatio || 1;
+    if (!r.width) return;
+    cv.width = r.width * d; cv.height = r.height * d; c.setTransform(d, 0, 0, d, 0, 0); api.redraw();
+  };
+  api.redraw = () => {
+    const r = cv.getBoundingClientRect();
+    c.clearRect(0, 0, r.width, r.height); paint(c, r.width, r.height, api.item.strokes, lwFn(r.width));
+  };
+  api.undo = () => { api.item.strokes.pop(); api.redraw(); };
+  api.clear = () => { api.item.strokes.length = 0; api.redraw(); };
+  const pt = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height]; };
+  cv.addEventListener('pointerdown', e => {
+    if (api.locked()) return;
+    if (e.pointerType === 'pen') penSeen = true;
+    if (penSeen && e.pointerType === 'touch') return; // 有觸控筆時，忽略手掌
+    cv.setPointerCapture(e.pointerId); api.drawing = [pt(e)]; api.item.strokes.push(api.drawing); api.redraw();
+  });
+  cv.addEventListener('pointermove', e => {
+    if (!api.drawing) return;
+    (e.getCoalescedEvents ? e.getCoalescedEvents() : [e]).forEach(ev => api.drawing.push(pt(ev)));
+    api.redraw();
+  });
+  ['pointerup', 'pointercancel'].forEach(t => cv.addEventListener(t, () => api.drawing = null));
+  return api;
+}
+window.addEventListener('resize', () => { pads.forEach(p => p.size()); if (modal.classList.contains('show')) bigPad.size(); });
+
+/* ---------- 寫字板（國字、注音、改錯字） ---------- */
+const modal = document.getElementById('modal');
+const bigPad = drawable(document.getElementById('cv'), w => Math.max(w * 0.012, 1.5));
+let curHand = null;
+function handItems() { return state.items.filter(i => i.type === 'hand'); }
+function manualItems() { return state.items.filter(i => i.type === 'hand' || i.type === 'write'); }
+function openPad(it) {
+  if (state.graded) return;
+  curHand = it;
+  bigPad.item = { strokes: it.strokes.map(s => s.slice()) };
+  const all = handItems();
+  document.getElementById('padzy').textContent = it.prompt;
+  document.getElementById('padctx').textContent = `第 ${all.indexOf(it) + 1} / ${all.length} 格`;
+  modal.classList.add('show'); bigPad.size();
+}
+function savePad() {
+  const it = curHand, strokes = bigPad.item.strokes;
+  it.strokes = strokes.map(s => s.slice());
+  if (!strokes.length) { it.img = null; it.cell.innerHTML = ''; return; }
+  const off = document.createElement('canvas'); off.width = off.height = 160;
+  paint(off.getContext('2d'), 160, 160, strokes, 5);
+  it.img = off.toDataURL(); it.cell.innerHTML = `<img src="${it.img}" alt="">`;
+}
+document.getElementById('btnUndo').onclick = () => bigPad.undo();
+document.getElementById('btnClear').onclick = () => bigPad.clear();
+document.getElementById('btnClose').onclick = () => { savePad(); modal.classList.remove('show'); };
+document.getElementById('btnNext').onclick = () => {
+  savePad();
+  const all = handItems(), i = all.indexOf(curHand);
+  if (i + 1 < all.length) { openPad(all[i + 1]); all[i + 1].el.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' }); }
+  else modal.classList.remove('show');
+};
+
+/* ---------- 各題型的畫法 ---------- */
+const CIRCLED = '①②③④⑤⑥';
+const ptsOf = (sec, q) => (q && q.pts != null) ? q.pts : sec.points;
+const RENDER = {
+  zhuyin(sec, box) {
+    box.append(el('p', 'hint', '點空格會跳出大的寫字格：有注音的寫國字，有國字的寫注音。寫完按「下一格」。' + (sec.mini ? '' : '題目比較長時，用手指把考卷往右拖，可以看到後面的題目。')));
+    const paper = el('div', sec.mini ? 'minis' : 'paper');
+    sec.items.forEach((parts, qi) => {
+      const p = el('p');
+      if (sec.mini) {
+        const card = el('div', 'minicard'); card.append(el('div', 'mininum', `${qi + 1}.`));
+        const m = el('div', 'paper mini'); m.append(p); card.append(m); paper.append(card);
+      }
+      parts.forEach(o => {
+        if (typeof o === 'string') { p.append(o); return; }
+        const zyMode = o.ask === 'zy';
+        const wctx = sec.mini ? parts.map(x => typeof x === 'string' ? x : (x === o ? '○' : x.c)).join('').replace(/[。，]/g, '') : '';
+        const b = el('span', 'box' + (o.g ? ' given' : '') + (zyMode ? ' askzy' : ''));
+        const cell = el('span', 'cell', (o.g || zyMode) ? o.c : null);
+        const zy = el('span', 'zy', zyMode ? '' : (o.z || ''));
+        b.append(cell, zy);
+        if (!o.g) {
+          const it = add({ type: 'hand', zyMode, points: sec.perItem ? sec.perItem / parts.filter(x => typeof x === 'object' && !x.g).length : sec.points, answer: zyMode ? o.z : o.c, c: o.c, z: o.z,
+            w: wctx, prompt: zyMode ? `寫出「${o.c}」的注音` : o.z, el: b, cell: zyMode ? zy : cell, strokes: [], img: null });
+          b.onclick = () => openPad(it);
+        }
+        p.append(b);
+      });
+      if (!sec.mini) paper.append(p);
+    });
+    box.append(paper);
+  },
+  boxes(sec, box) {
+    box.append(el('p', 'hint', '點格子寫字，依照錯字在句子裡出現的順序寫。'));
+    sec.items.forEach((q, qi) => {
+      const d = el('div', 'q'); d.append(el('div', 'qt', q.q));
+      const row = el('div', 'hboxes');
+      q.a.forEach((ans, k) => {
+        const wrap = el('div', 'hbox');
+        const b = el('span', 'box nozy'); const cell = el('span', 'cell'); b.append(cell, el('span', 'zy'));
+        const label = (q.labels && q.labels[k]) || `第 ${k + 1} 個`;
+        const it = add({ type: 'hand', points: ptsOf(sec, q), answer: ans, prompt: `寫出正確的字（${label}）`, z: `第${qi + 1}句 ${label}`, el: b, cell, strokes: [], img: null });
+        b.onclick = () => openPad(it);
+        wrap.append(b, el('span', null, label)); row.append(wrap);
+      });
+      d.append(row); box.append(d);
+    });
+  },
+  choice(sec, box, tf) {
+    sec.items.forEach((q, i) => {
+      const d = el('div', 'q'); d.append(el('div', 'qt', /^([\(（甲乙丙丁]|\d+\.)/.test(q.q) ? q.q : `${i + 1}. ${q.q}`));
+      if (q.img) { const im = el('img', 'qimg'); im.src = q.img; im.alt = '題目圖片'; d.append(im); }
+      if (q.say) {
+        const sb = el('button', 'saybtn', '🔊 播放'); sb.type = 'button';
+        sb.onclick = () => {
+          try {
+            if (!window.speechSynthesis) throw 0;
+            speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(q.say); u.lang = 'en-US'; u.rate = .8; speechSynthesis.speak(u);
+          } catch (e) { sb.textContent = '請家長念：' + q.say; }
+        };
+        d.append(sb);
+      }
+      const wide = !tf && state.ex && state.ex.subject === 'english';
+      if (!tf && !wide) { const ol = el('div', 'optlist'); q.opts.forEach((o, k) => { const sp = el('span', 'optitem'); sp.append(el('b', null, CIRCLED[k]), el('span', null, o)); ol.append(sp); }); const n = q.opts.length, mx = Math.max(...q.opts.map(o => o.length)); ol.style.gridTemplateColumns = mx > 14 ? '1fr' : (n === 4 || mx > 8) ? 'repeat(2, minmax(0, 1fr))' : `repeat(${Math.min(n, 3)}, minmax(0, 1fr))`; d.append(ol); }
+      const opts = el('div', wide ? 'opts wideopts' : 'opts codes');
+      const labels = tf ? ['○', '✕'] : wide ? q.opts.map((o, k) => `${CIRCLED[k]}  ${o}`) : q.opts.map((o, k) => CIRCLED[k]);
+      const it = add({ q, tf, type: 'choice', points: ptsOf(sec, q), answer: tf ? (q.a ? 0 : 1) : q.a, resp: null, el: d, opts: [] });
+      labels.forEach((t, k) => {
+        const b = el('button', 'opt', t);
+        b.onclick = () => {
+          if (state.graded || it.done) return;
+          it.resp = k; it.opts.forEach((x, j) => x.classList.toggle('sel', j === k));
+          if (state.battle) {
+            it.done = true; it.ok = k === it.answer;
+            it.opts.forEach(x => x.classList.add('locked'));
+            it.opts[it.answer].classList.add('right'); if (!it.ok) b.classList.add('wrong');
+            setQMark(it); recordJudge(it);
+            it.ok ? state.battle.hit(it.points, b) : state.battle.miss();
+          }
+        };
+        it.opts.push(b); opts.append(b);
+      });
+      d.append(opts); box.append(d);
+    });
+  },
+  tf(sec, box) { RENDER.choice(sec, box, true); },
+  multi(sec, box) {
+    sec.items.forEach((q, i) => {
+      const d = el('div', 'q'); d.append(el('div', 'qt', `${i + 1}. ${q.q}`));
+      const opts = el('div', 'opts');
+      const it = add({ q, type: 'multi', points: ptsOf(sec, q), answer: q.a, resp: new Set(), el: d, opts: [] });
+      q.opts.forEach((t, k) => {
+        const b = el('button', 'opt multi', t);
+        b.onclick = () => { if (state.graded) return; it.resp.has(k) ? it.resp.delete(k) : it.resp.add(k); b.classList.toggle('sel', it.resp.has(k)); };
+        it.opts.push(b); opts.append(b);
+      });
+      d.append(opts); box.append(d);
+    });
+  },
+  fill(sec, box) {
+    sec.items.forEach((q, i) => {
+      const d = el('div', 'q');
+      const [pre, post = ''] = q.q.split('＿＿');
+      const inp = answerInput(q);
+      d.append(/^\d/.test(pre) ? pre : `${i + 1}. ${pre}`, inp, post);
+      if (q.unit) d.append(' ' + q.unit);
+      liveCheck(add({ q, type: 'text', points: ptsOf(sec, q), answer: q.a, input: inp, el: d }));
+      box.append(d);
+    });
+  },
+  calc(sec, box) {
+    sec.items.forEach((q, i) => {
+      const d = el('div', 'q'); d.append(el('div', 'qt', `${i + 1}. ${q.q}`));
+      if (!sec.nowork) {
+        const work = el('div', 'work');
+        const lbl = el('div', 'worklbl'); lbl.append(el('span', null, '算式（寫在這裡，不計分）'));
+        const clr = el('button', null, '清除'); lbl.append(clr);
+        const cv = el('canvas'); work.append(lbl, cv);
+        const pad = drawable(cv, () => 2.5); pad.locked = () => state.graded; pads.push(pad);
+        clr.onclick = () => { if (!state.graded) pad.clear(); };
+        d.append(work);
+      }
+      const ans = el('div', 'ansline'); ans.append('答：');
+      if (q.parts) {
+        const inps = [];
+        const it = add({ q, type: 'numset', points: ptsOf(sec, q), answer: q.parts.map(x => x.a), el: d,
+          getVals: () => inps.map(x => x.value.trim()),
+          lock: () => inps.forEach(x => x.disabled = true),
+          showResult: ok => { inps.forEach((x, k) => x.classList.add(norm(x.value) === norm(q.parts[k].a) ? 'right' : 'wrong'));
+            if (!ok) ans.append(el('span', 'fixtxt', '正確：' + q.parts.map(x => x.a + ' ' + x.unit).join(' '))); } });
+        q.parts.forEach((pt, k) => {
+          const inp = numInput(() => { const nx = inps[k + 1]; if (nx && !nx.value) NumKey.open(inputField(nx, nx._cf)); else checkNumset(it); });
+          inp._cf = () => checkNumset(it);
+          inps.push(inp); ans.append(inp, ' ' + pt.unit + ' ');
+        });
+      } else {
+        const inp = answerInput({ num: true });
+        ans.append(inp, ' ' + (q.unit || ''));
+        liveCheck(add({ q, type: 'text', points: ptsOf(sec, q), answer: q.a, input: inp, el: d }));
+      }
+      d.append(ans);
+      box.append(d);
+    });
+  },
+  vert(sec, box) {
+    box.append(el('p', 'hint', '點答案格會出現數字鍵，從「個位」開始輸入，會自動往左跳。上面的小格可以寫進位或借位（不計分）。'));
+    const grid = el('div', 'vgrid');
+    sec.items.forEach((q, i) => {
+      const d = el('div', 'q vq'); d.append(el('div', 'qt', `(${i + 1})`));
+      const top = String(q.top), bot = String(q.bot), W = Math.max(top.length, bot.length, q.a.length) + 1;
+      const t = el('div', 'vtable'); t.style.setProperty('--w', W);
+      const row = (chars, cls) => { const r = el('div', 'vrow ' + (cls || '')); const pad = W - chars.length; for (let k = 0; k < W; k++) r.append(el('span', 'vc', k >= pad ? chars[k - pad] : '')); return r; };
+      // 進位／借位小格
+      const carry = el('div', 'vrow carry');
+      for (let k = 0; k < W; k++) {
+        const c = el('span', 'vc'); if (k > 0 && k < W - 1) { const m = el('span', 'vmini'); c.append(m);
+          m.onclick = () => { if (state.graded) return; NumKey.open({ el: m, focus() { m.classList.add('kfocus'); }, blur() { m.classList.remove('kfocus'); }, digit(x) { m.textContent = x; NumKey.close(); }, back() { m.textContent = ''; }, confirm() {} }); }; }
+        carry.append(c);
+      }
+      const r2 = row(bot); r2.firstChild.textContent = q.op === '+' ? '＋' : '－'; r2.classList.add('under');
+      const ansRow = el('div', 'vrow ansrow'); const cells = [];
+      const padA = W - q.a.length;
+      for (let k = 0; k < W; k++) {
+        const c = el('span', 'vc');
+        if (k >= padA) { const cell = el('span', 'dcell'); c.append(cell); cells.push(cell); }
+        ansRow.append(c);
+      }
+      t.append(carry, row(top), r2, ansRow); d.append(t);
+      const it = add({ q, vert: true, type: 'numset', points: ptsOf(sec, q), answer: q.a.split(''), el: d,
+        getVals: () => cells.map(c => c.textContent),
+        lock: () => cells.forEach(c => c.classList.add('locked')),
+        showResult: ok => { cells.forEach((c, k) => c.classList.add(c.textContent === q.a[k] ? 'right' : 'wrong'));
+          if (!ok) d.append(el('div', 'fixtxt', '正確：' + q.a)); } });
+      const field = idx => ({ el: cells[idx],
+        focus() { cells.forEach(c => c.classList.remove('kfocus')); cells[idx].classList.add('kfocus'); },
+        blur() { cells[idx].classList.remove('kfocus'); },
+        digit(x) { cells[idx].textContent = x; if (idx > 0 && !cells[idx - 1].textContent) NumKey.open(field(idx - 1)); else { const ff = cells.findIndex(c => !c.textContent); if (ff >= 0) NumKey.open(field(ff)); else { NumKey.close(); checkNumset(it); } } },
+        back() { if (cells[idx].textContent) cells[idx].textContent = ''; else if (idx < cells.length - 1) { cells[idx + 1].textContent = ''; NumKey.open(field(idx + 1)); } },
+        confirm() { checkNumset(it); } });
+      cells.forEach((c, k) => c.onclick = () => { if (!state.graded && !it.done) NumKey.open(field(k)); });
+      grid.append(d);
+    });
+    box.append(grid);
+  },
+  write(sec, box) {
+    sec.items.forEach(q => {
+      const d = el('div', 'q'); d.append(el('div', 'qt', q.q));
+      const work = el('div', 'work');
+      const lbl = el('div', 'worklbl'); lbl.append(el('span', null, '寫在這裡'));
+      const clr = el('button', null, '清除'); lbl.append(clr);
+      const cv = el('canvas'); cv.style.height = (q.h || sec.h || 220) + 'px'; work.append(lbl, cv);
+      const pad = drawable(cv, () => 2.5); pad.locked = () => state.graded; pads.push(pad);
+      clr.onclick = () => { if (!state.graded) pad.clear(); };
+      d.append(work);
+      add({ type: 'write', points: ptsOf(sec, q), ref: q.ref || '', el: d, pad, cv, img: null });
+      box.append(d);
+    });
+  },
+  passage(sec, box) {
+    sec.items.forEach(p => {
+      const d = el('div', 'passage');
+      if (p.text) d.textContent = p.text;
+      if (p.img) { const im = el('img'); im.src = p.img; im.alt = '題目圖片'; d.append(im); }
+      box.append(d);
+    });
+  }
+};
+/* ---------- 平板數字鍵盤（不跳出系統鍵盤，按鍵大、不會誤觸） ---------- */
+const NumKey = (function () {
+  const k = document.createElement('div'); k.className = 'numkey';
+  k.innerHTML = '<div class="nkrow"></div>';
+  const grid = k.firstChild;
+  ['1','2','3','4','5','6','7','8','9','⌫','0','確定'].forEach(t => {
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = t;
+    if (t === '確定') b.className = 'primary'; if (t === '⌫') b.className = 'bs';
+    b.onclick = () => press(t); grid.append(b);
+  });
+  let f = null;
+  function press(t) {
+    if (!f) return; SFX.tap();
+    if (t === '確定') { const ff = f; close(); ff.confirm && ff.confirm(); return; }
+    if (t === '⌫') { f.back(); return; }
+    f.digit(t);
+  }
+  function open(field) {
+    if (f && f !== field) f.blur && f.blur();
+    f = field; f.focus && f.focus();
+    if (!k.isConnected) document.body.append(k);
+    k.classList.add('show'); document.body.classList.add('nkopen');
+    const r = field.el.getBoundingClientRect();
+    if (r.bottom > window.innerHeight - 330) window.scrollBy({ top: r.bottom - (window.innerHeight - 340), behavior: 'smooth' });
+  }
+  function close() { if (f) f.blur && f.blur(); f = null; k.classList.remove('show'); document.body.classList.remove('nkopen'); }
+  return { open, close, get field() { return f; } };
+})();
+function inputField(inp, onConfirm) {
+  return { el: inp,
+    focus() { inp.classList.add('kfocus'); }, blur() { inp.classList.remove('kfocus'); },
+    digit(d) { if (inp.value.length < 6) inp.value += d; }, back() { inp.value = inp.value.slice(0, -1); },
+    confirm() { onConfirm ? onConfirm() : inp.dispatchEvent(new Event('change')); } };
+}
+function numInput(onConfirm) {
+  const inp = el('input', 'ans num'); inp.readOnly = true; inp.inputMode = 'none'; inp.autocomplete = 'off';
+  inp.addEventListener('click', () => { if (!inp.disabled && !(state && state.graded)) NumKey.open(inputField(inp, onConfirm)); });
+  return inp;
+}
+function checkNumset(it, fromSubmit) {
+  if (it.done) return;
+  const vals = it.getVals();
+  if (!fromSubmit && vals.some(v => v === '')) return;
+  it.done = true;
+  it.ok = vals.every((v, i) => v !== '' && norm(v) === norm(it.answer[i]));
+  it.lock();
+  it.showResult(it.ok);
+  setQMark(it); recordJudge(it, vals.every(v => v === ''));
+  if (!fromSubmit && state.battle) it.ok ? state.battle.hit(it.points, it.el.querySelector('.qt') || it.el) : state.battle.miss();
+}
+
+function liveCheck(it) {
+  it.input.addEventListener('change', () => {
+    if (!state.battle || state.graded || it.done || !it.input.value.trim()) return;
+    it.done = true;
+    it.ok = [].concat(it.answer).map(norm).includes(norm(it.input.value));
+    it.input.disabled = true; it.input.classList.add(it.ok ? 'right' : 'wrong');
+    if (!it.ok) it.input.after(el('span', 'fixtxt', `正確：${[].concat(it.answer)[0]}`));
+    setQMark(it); recordJudge(it);
+    it.ok ? state.battle.hit(it.points, it.input) : state.battle.miss();
+  });
+  it.input.addEventListener('keydown', e => { if (e.key === 'Enter') it.input.blur(); });
+}
+function answerInput(q) {
+  if (q.num) return numInput();
+  const inp = el('input', 'ans');
+  inp.autocomplete = 'off'; inp.autocapitalize = 'off'; inp.spellcheck = false;
+  if (q.num) inp.inputMode = 'decimal';
+  return inp;
+}
+function add(it) { it.ok = null; it.idx = state.items.length; state.items.push(it); return it; }
+
+/* ---------- 考卷 ---------- */
+function renderExam(ex) {
+  const s = SUBJECTS.find(x => x.id === ex.subject);
+  state = { ex, items: [], graded: false, saved: false }; pads = [];
+  setHeader(`${curKid.name}・${s.name}・${ex.title}`, () => renderKid(curKid).then(() => renderSubject(ex.subject)));
+  app.innerHTML = '';
+  const heads = [];
+  ex.sections.forEach(sec => {
+    const box = el('section', 'sec');
+    if (sec.title) {
+      const h = el('h2', null, sec.title); const sm = el('small'); h.append(sm);
+      heads.push({ sm, from: state.items.length, type: sec.type, sec });
+      box.append(h);
+    } else { box.style.marginTop = '-14px'; box.style.borderTop = 'none'; box.style.borderTopLeftRadius = box.style.borderTopRightRadius = '0'; }
+    RENDER[sec.type](sec, box);
+    app.append(box);
+  });
+  // 依比例換算成 100 分：每一大題顯示占幾分、每格（題）約幾分
+  const examTotal = state.items.reduce((a, i) => a + i.points, 0) || 1;
+  const fmt = n => (Math.round(n * 10) / 10).toString();
+  const yue = n => Math.abs(n - Math.round(n)) < 1e-9 ? '' : '約';
+  heads.forEach((h, k) => {
+    const its = state.items.slice(h.from, k + 1 < heads.length ? heads[k + 1].from : state.items.length);
+    if (!its.length) return;
+    const share = its.reduce((a, i) => a + i.points, 0) / examTotal * 100;
+    const same = its.every(i => i.points === its[0].points);
+    const unit = h.type === 'zhuyin' || h.type === 'boxes' ? '格' : '題';
+    if (h.sec.perItem) { h.sm.textContent = `（共 ${h.sec.items.length} 題，每題 ${h.sec.perItem} 分，滿分 ${Math.round(h.sec.items.length * h.sec.perItem)}）`; return; }
+    h.sm.textContent = heads.length === 1
+      ? `（共 ${its.length} ${unit}，每${unit}${yue(100 / its.length)} ${fmt(100 / its.length)} 分，滿分 100）`
+      : `（${fmt(share)} 分${same ? `，每${unit}${yue(its[0].points / examTotal * 100)} ${fmt(its[0].points / examTotal * 100)} 分` : ''}）`;
+  });
+  const bar = el('div', 'submitbar');
+  const sub = el('button', 'primary', '交卷'); sub.onclick = submit;
+  bar.append(sub); app.append(bar);
+  const autoHP = state.items.filter(i => i.type === 'choice' || i.type === 'text' || i.type === 'numset').reduce((a, i) => a + i.points, 0);
+  if (autoHP > 0) {
+    state.battle = createBattle({ subject: ex.subject, maxHP: Math.round(autoHP * 10) / 10, kidAvatar: curKid.avatar, kidName: curKid.name,
+      onDeath: () => { if (state && state.ex === ex) { state.graded = true; showGameOver(() => renderExam(ex)); } } });
+    app.prepend(state.battle.el);
+    if (!parentMode) { const hb = el('button', 'hintbtn'); hb.onclick = useHint; state.battle.el.querySelector('.vs').append(hb); updateHintBtn(); }
+  }
+  pads.forEach(p => p.size());
+  window.scrollTo(0, 0);
+}
+
+function norm(s) {
+  return String(s).replace(/[０-９ａ-ｚＡ-Ｚ．]/g, c => String.fromCharCode(c.charCodeAt(0) - 65248))
+    .replace(/\s/g, '').toLowerCase();
+}
+function setQMark(it) { it.el.classList.toggle('is-ok', it.ok === true); it.el.classList.toggle('is-ng', it.ok === false); }
+
+function submit() {
+  if (state.graded) return;
+  NumKey.close();
+  state.graded = true;
+  state.items.forEach(it => {
+    if (it.type === 'choice') {
+      it.ok = it.resp === it.answer;
+      it.opts[it.answer].classList.add('right');
+      if (it.resp !== null && !it.ok) it.opts[it.resp].classList.add('wrong');
+      setQMark(it); recordJudge(it, it.resp === null);
+    } else if (it.type === 'multi') {
+      const want = new Set(it.answer);
+      it.ok = want.size === it.resp.size && [...want].every(k => it.resp.has(k));
+      it.opts.forEach((b, k) => { if (want.has(k)) b.classList.add('right'); else if (it.resp.has(k)) b.classList.add('wrong'); });
+      setQMark(it); recordJudge(it, !it.resp.size);
+    } else if (it.type === 'write') {
+      if (it.pad.item.strokes.length) {
+        const r = it.cv.getBoundingClientRect(), W = 900, H = Math.round(W * r.height / r.width);
+        const off = document.createElement('canvas'); off.width = W; off.height = H;
+        const c = off.getContext('2d'); c.fillStyle = '#fff'; c.fillRect(0, 0, W, H);
+        paint(c, W, H, it.pad.item.strokes, 3.5); it.img = off.toDataURL();
+      }
+    } else if (it.type === 'numset') {
+      checkNumset(it, true);
+    } else if (it.type === 'text' && it.done) {
+      // 作答時已經判定過
+    } else if (it.type === 'text') {
+      const acc = [].concat(it.answer).map(norm);
+      it.ok = it.input.value.trim() !== '' && acc.includes(norm(it.input.value));
+      it.input.disabled = true; it.input.classList.add(it.ok ? 'right' : 'wrong');
+      if (!it.ok) it.input.after(el('span', 'fixtxt', `正確：${[].concat(it.answer)[0]}`));
+      setQMark(it); recordJudge(it, it.input.value.trim() === '');
+    }
+  });
+  document.querySelector('.submitbar').remove();
+
+  const manual = manualItems();
+  if (manual.length) {
+    const sec = el('section', 'sec');
+    sec.append(el('h2', null, '家長批改：手寫題'));
+    sec.append(el('p', 'hint', '有寫的格子都先算對，看到寫錯的就按 ✕，分數會自動扣掉；按錯了再按 ○ 改回來。空白的格子自動算錯。'));
+    const cards = el('div', 'cards');
+    manual.forEach(it => {
+      const wide = it.type === 'write';
+      const c = el('div', 'card' + (wide ? ' wide' : ''));
+      const kid = el('div', 'kid', it.img ? null : '空白'); if (it.img) kid.innerHTML = `<img src="${it.img}">`;
+      let r;
+      if (wide) { r = el('div', 'ansbox', it.el.querySelector('.qt').textContent.split('\n')[0]); r.append(el('b', null, '參考：' + it.ref)); }
+      else { r = el('div', 'ansbox' + (it.zyMode ? ' zy' : ''), it.zyMode ? `「${it.c}」` : it.z); r.append(el('b', null, it.answer)); }
+      const mk = el('div', 'mk'); const okb = el('button', null, '○'), ngb = el('button', null, '✕'); mk.append(okb, ngb);
+      c.append(kid, r, mk); cards.append(c);
+      it.okb = okb; it.ngb = ngb;
+      okb.onclick = () => { if (it.ok !== true) SFX.coin(); markHand(it, true); }; ngb.onclick = () => { if (it.ok !== false) SFX.ah(); markHand(it, false); };
+      if (!it.img) markHand(it, false, true); else markHand(it, true, true);
+    });
+    sec.append(cards); app.append(sec);
+  }
+  const again = el('div', 'submitbar'); const b = el('button', null, '重新作答'); b.onclick = () => renderExam(state.ex);
+  again.append(b); app.append(again);
+  updateScore();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function markHand(it, v, quiet) {
+  it.ok = v;
+  if (it.type === 'write') setQMark(it);
+  else {
+    it.el.classList.toggle('ok', v === true); it.el.classList.toggle('ng', v === false);
+    it.el.querySelector('.fix')?.remove();
+    if (v === false) it.el.append(el('span', 'fix', it.answer));
+  }
+  it.okb.classList.toggle('on', v === true); it.ngb.classList.toggle('on', v === false);
+  if (!quiet) updateScore();
+}
+function updateScore() {
+  const total = state.items.reduce((s, i) => s + i.points, 0);
+  const got = state.items.reduce((s, i) => s + (i.ok === true ? i.points : 0), 0);
+  const todo = state.items.filter(i => i.ok === null).length;
+  const score = Math.round(got / total * 100);
+  scoreEl.textContent = `得分 ${score}` + (todo ? `（還有 ${todo} 格待批改）` : '');
+  if (!todo) {
+    const now = new Map();
+    state.items.filter(i => i.type === 'hand' && !i.zyMode && i.z && i.img && i.ok === false && /^\p{Script=Han}$/u.test(i.answer)).forEach(i => now.set(i.answer, i));
+    const prev = state.mistSet || new Map(), ch = [];
+    now.forEach((i, c) => { if (!prev.has(c)) ch.push({ c, z: i.z, w: i.w, delta: 1 }); });
+    prev.forEach((i, c) => { if (!now.has(c)) ch.push({ c, delta: -1 }); });
+    state.mistSet = now; bumpMistakes(ch);
+  }
+  if (!todo && !state.celebrated) { state.celebrated = true; celebrate(score); }
+  if (!todo && score !== state.savedScore && !state.ex.practice) {
+    const first = !state.saved; state.saved = true; state.savedScore = score;
+    const st = state;
+    st.saving = (st.saving || Promise.resolve()).then(() => Store.saveRecord(curKid.id, st.ex.id, score, first))
+      .catch(() => { scoreEl.textContent += '（成績沒存成功）'; });
+  }
+}
+
+(function () {
+  // 背景場景：遠山、城堡、旗子、飄動的雲
+  const sc = document.createElement('div'); sc.className = 'scene';
+  sc.innerHTML = `
+  <svg class="far" viewBox="0 0 1200 300" preserveAspectRatio="none"><path d="M0 300 L0 170 L90 110 L170 160 L260 80 L360 150 L450 100 L560 170 L650 90 L760 160 L860 70 L960 150 L1060 110 L1200 170 L1200 300Z" fill="#3b2a6b"/></svg>
+  <svg class="castle" viewBox="0 0 240 200"><g fill="#2a1d4f">
+    <rect x="20" y="80" width="40" height="120"/><rect x="180" y="80" width="40" height="120"/><rect x="60" y="110" width="120" height="90"/>
+    <rect x="95" y="50" width="50" height="150"/>
+    <rect x="16" y="70" width="10" height="12"/><rect x="34" y="70" width="10" height="12"/><rect x="52" y="70" width="10" height="12"/>
+    <rect x="176" y="70" width="10" height="12"/><rect x="194" y="70" width="10" height="12"/><rect x="212" y="70" width="10" height="12"/>
+    <rect x="91" y="40" width="10" height="12"/><rect x="115" y="40" width="10" height="12"/><rect x="139" y="40" width="10" height="12"/>
+    <rect x="119" y="6" width="3" height="36"/></g>
+    <path class="flag" d="M122 6 L146 13 L122 20Z" fill="#ffc83d"/>
+    <g fill="#ffd36e" opacity=".85"><rect x="34" y="110" width="10" height="14"/><rect x="194" y="110" width="10" height="14"/><rect x="113" y="80" width="14" height="18"/><rect x="108" y="160" width="24" height="40" fill="#120b26"/></g></svg>
+  <svg class="near" viewBox="0 0 1200 200" preserveAspectRatio="none"><path d="M0 200 L0 110 Q150 60 300 100 T600 90 T900 100 T1200 80 L1200 200Z" fill="#4e3570"/><path d="M0 200 L0 150 Q200 120 400 150 T800 140 T1200 150 L1200 200Z" fill="#5a3b26"/></svg>
+  <div class="cloud c1"></div><div class="cloud c2"></div><div class="cloud c3"></div>`;
+  document.body.prepend(sc);
+  for (let i = 0; i < 10; i++) { const d = document.createElement('div'); d.className = 'spark'; d.style.left = (Math.random() * 100) + 'vw'; d.style.top = (Math.random() * 60) + 'vh'; d.style.animationDelay = (-Math.random() * 4) + 's'; document.body.append(d); }
+})();
+renderHome();
+</script>
+</body>
+</html>
