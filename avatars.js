@@ -2,7 +2,7 @@
 var AVATARS = [
   { id: 'curly',   name: '酷外套小子', skin: '#e9b98f', hair: '#2a1c14', hs: 'curly',  top: 'jacket', shirt: '#2f6fd6', jacket: '#1f2433', pants: '#26324f', print: 'gem' },
   { id: 'redhat',  name: '紅帽女孩',   skin: '#f7d6b8', hair: '#3a2416', hs: 'side',   hat: 'beanie', hatc: '#d93a3a', top: 'tee', shirt: '#3d7cc9', pants: '#2b3a5c', print: 'heart' },
-  { id: 'vip',     name: 'VIP 大亨',   skin: '#f2c9a0', hair: '#2340b8', hs: 'spiky',  glass: 'gold', top: 'vip', shirt: '#2a8cf0', pants: '#1b1f2b', chain: true },
+  { id: 'vip',     name: 'VIP 男孩',   skin: '#f2c9a0', hair: '#2340b8', hs: 'spiky',  glass: 'gold', top: 'vip', shirt: '#2a8cf0', pants: '#1b1f2b', chain: true },
   { id: 'pony',    name: '馬尾女孩',   skin: '#f7d6b8', hair: '#8a5a2b', hs: 'pony',   top: 'overall', shirt: '#ffd36e', jacket: '#ff7eb6', pants: '#ff7eb6' },
   { id: 'gamer',   name: '耳機玩家',   skin: '#f2c9a0', hair: '#4a2f1d', hs: 'short',  hat: 'phones', hatc: '#25b04c', top: 'tee', shirt: '#7b4fd6', pants: '#2b3a5c', print: 'game' },
   { id: 'starlet', name: '粉紅明星',   skin: '#f7d6b8', hair: '#ff8ac6', hs: 'bob',    glass: 'heart', top: 'jacket', shirt: '#ffffff', jacket: '#b06cff', pants: '#f3f4fb' },

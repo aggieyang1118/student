@@ -11,13 +11,13 @@ EXTRA_EXAMS.push(
       { ex: "大寫 G 的小寫是 g，尾巴往下彎。", q: "大寫 G 的小寫是哪一個？", opts: OPT("q|g|j|y"), a: 1 },
       { ex: "小寫 h 的大寫是 H。", q: "小寫 h 的大寫是哪一個？", opts: OPT("N|H|K|M"), a: 1 },
       { ex: "大寫和小寫要配同一個字母：B 配 b 才對。", q: "哪一組大小寫配對是正確的？", opts: OPT("A － e|B － b|D － b|G － q"), a: 1 },
-      { ex: "字母順序是 A、B、C、D、E，所以空格是 D。", q: "A　B　C　＿　E，空格裡應該是哪一個字母？", opts: OPT("D|F|G|B"), a: 0 }
+      { ex: "字母順序是 H、I、J、K。", q: "下列哪一組字母的順序是正確的？", opts: OPT("H I J K|H J I K|I H J K|H I K J"), a: 0 }
     ]},
     { type: "choice", title: "二、看圖選字母、開頭發音", points: 5, items: [
-      { ex: "apple（蘋果）的第一個字母是 a。", q: "🍎 apple 的第一個字母是哪一個？", opts: OPT("a|e|o|b"), a: 0 },
-      { ex: "dog（狗）的第一個字母是 d。", q: "🐶 dog 的第一個字母是哪一個？", opts: OPT("b|d|p|g"), a: 1 },
-      { ex: "egg（蛋）的第一個字母是 e。", q: "🥚 egg 的第一個字母是哪一個？", opts: OPT("a|i|e|o"), a: 2 },
-      { ex: "cat（貓）的第一個字母是 c，念起來像「ㄎ」的音。", q: "🐱 cat 的第一個字母是哪一個？", opts: OPT("k|s|c|t"), a: 2 },
+      { ex: "apple（蘋果）的第一個字母是 a。", q: "🍎 ＿pple，空格要填哪一個字母？", opts: OPT("a|e|o|b"), a: 0 },
+      { ex: "dog（狗）的第一個字母是 d，不要和 b 弄混。", q: "🐶 ＿og，空格要填哪一個字母？", opts: OPT("b|d|p|g"), a: 1 },
+      { ex: "egg（蛋）的第一個字母是 e。", q: "🥚 ＿gg，空格要填哪一個字母？", opts: OPT("a|i|e|o"), a: 2 },
+      { ex: "cat（貓）的第一個字母是 c，念起來像「ㄎ」的音，但不是 k。", q: "🐱 ＿at，空格要填哪一個字母？", opts: OPT("k|s|c|t"), a: 2 },
       { ex: "apple 和 ant 都是 a 開頭，發 [æ] 的音。", q: "哪一個單字開頭的音，和 apple 一樣？", opts: OPT("ant|egg|dog|cat"), a: 0 }
     ]},
     { type: "choice", title: "三、數字", points: 5, items: [
