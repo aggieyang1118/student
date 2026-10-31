@@ -98,58 +98,86 @@ var SFX = (function () {
   function startTrack(name) {
     bgmStep = 0;
     if (name === 'menu') {
-      // 原創「8-bit 電玩冒險主題」：150 BPM，D 小調 Dm – B♭ – C – A
-      // 老遊戲機的做法：25% 方波主旋律＋回音聲部、快速和弦琶音、三角波貝斯、雜訊打擊
-      // 結構（16 小節）：0–3 主歌 → 4–5 漸強 → 6–13 副歌 → 14–15 間奏號角
+      // 原創「搖滾 × EDM 混音」：128 BPM，D 小調 Dm – B♭ – C – A，整體音域壓低、高頻收掉，不刺耳
+      // 結構（16 小節）：0–3 主歌（悶音吉他＋貝斯＋輕鼓）→ 4–5 漸強（EDM 往上衝）→ 6–13 副歌（破音吉他和弦＋四拍大鼓＋抽動低音＋吉他主旋律）→ 14–15 間奏（吉他 riff）
+      const c = ac();
+      if (!api._dist2) {                                                      // 溫暖的破音（濾掉刺耳高頻）
+        const ws = c.createWaveShaper(), n = 1024, cv = new Float32Array(n);
+        for (let i = 0; i < n; i++) { const x = i * 2 / n - 1; cv[i] = Math.tanh(x * 4); }
+        ws.curve = cv; const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1700; lp.Q.value = .5;
+        const g = c.createGain(); g.gain.value = .5; ws.connect(lp); lp.connect(g); g.connect(master); api._dist2 = ws;
+      }
+      if (!api._warm) {                                                       // 合成器也過一層低通，聲音比較圓
+        const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1400; lp.connect(master); api._warm = lp;
+      }
+      const D = api._dist2, W = api._warm;
       const roots = [73.42, 58.27, 65.41, 55.0];                              // D – B♭ – C – A
-      const chords = [[293.7, 349.2, 440], [233.1, 293.7, 349.2], [261.6, 329.6, 392], [277.2, 329.6, 440]];
-      const _ = 0, A4 = 440, Bb4 = 466.2, C5 = 523.3, Cs5 = 554.4, D5 = 587.3, E5 = 659.3, F5 = 698.5, G5 = 784, A5 = 880, Bb5 = 932.3, C6 = 1046.5, Cs6 = 1108.7, D6 = 1174.7;
-      const verse = [
-        [D5, _, _, A4, D5, _, E5, _, F5, _, _, E5, D5, _, _, _],
-        [F5, _, _, D5, F5, _, G5, _, A5, _, _, G5, F5, _, _, _],
-        [E5, _, _, C5, E5, _, F5, _, G5, _, A5, _, G5, _, E5, _],
-        [Cs5, _, _, E5, A5, _, G5, _, F5, _, E5, _, Cs5, _, _, _]];
-      const hook = [
-        [A5, _, _, _, F5, _, A5, _, D6, _, _, _, C6, _, A5, _],
-        [Bb5, _, _, _, A5, _, F5, _, D5, _, F5, _, Bb5, _, _, _],
-        [C6, _, _, _, G5, _, C6, _, E5, _, G5, _, C6, _, _, _],
-        [A5, _, _, _, G5, _, F5, _, E5, _, _, _, Cs6, _, D6, _]];
-      const fanfare = [D5, _, D5, D5, A5, _, _, _, G5, _, F5, _, G5, _, A5, _];
-      const len = (arr, i) => { let k = i + 1; while (k < 16 && !arr[k]) k++; return Math.min(k - i, 4) * .1; };   // 音符長度＝到下一個音為止
-      const tri = (f, d, v) => tone(f, d, 'triangle', v);
-      const hat = (v) => noise(.02, v, 'highpass', 7000);
-      const snr = (v) => noise(.08, v, 'bandpass', 2500, 0, .6);
-      const kik = (v) => tone(120, .1, 'triangle', v, 50);
+      const chords = [[146.8, 174.6, 220], [116.5, 146.8, 174.6], [130.8, 164.8, 196], [138.6, 164.8, 220]];
+      const _ = 0, A3 = 220, Bb3 = 233.1, C4 = 261.6, Cs4 = 277.2, D4 = 293.7, E4 = 329.6, F4 = 349.2, G4 = 392, A4 = 440, Bb4 = 466.2, C5 = 523.3;
+      const verse = [                                                         // 主歌（原創，低一個八度）
+        [D4, _, _, A3, D4, _, E4, _, F4, _, _, E4, D4, _, _, _],
+        [F4, _, _, D4, F4, _, G4, _, A4, _, _, G4, F4, _, _, _],
+        [E4, _, _, C4, E4, _, F4, _, G4, _, A4, _, G4, _, E4, _],
+        [Cs4, _, _, E4, A4, _, G4, _, F4, _, E4, _, Cs4, _, _, _]];
+      const hook = [                                                          // 副歌（原創）
+        [A4, _, _, _, F4, _, A4, _, D4, _, F4, _, A4, _, G4, _],
+        [Bb4, _, _, _, A4, _, F4, _, D4, _, F4, _, Bb4, _, A4, _],
+        [C5, _, _, _, G4, _, E4, _, G4, _, C5, _, Bb4, _, A4, _],
+        [A4, _, _, _, G4, _, F4, _, E4, _, Cs4, _, E4, _, _, _]];
+      const riff = [D4, _, D4, F4, _, D4, G4, _, F4, _, D4, _, C4, _, D4, _];     // 間奏吉他 riff（原創）
+      const len = (arr, i) => { let k = i + 1; while (k < 16 && !arr[k]) k++; return Math.min(k - i, 4) * .117; };
+      const power = (r, d, v) => { tone(r * 2, d, 'sawtooth', v, null, 0, D); tone(r * 3, d, 'sawtooth', v * .7, null, 0, D); tone(r, d, 'sawtooth', v * .6, null, 0, D); };
+      const gtr = (f, d, v) => { tone(f, d, 'sawtooth', v, null, 0, D); tone(f * 1.003, d, 'square', v * .4, null, 0, D); };
+      const synth = (f, d, v) => { tone(f, d, 'sawtooth', v, null, 0, W); tone(f * 1.007, d, 'sawtooth', v * .7, null, 0, W); };
+      // 亮亮的聲音：鐘琴／音樂盒般的鈴聲（正弦波＋泛音，很快消失，不刺耳）
+      const bell = (f, v, dl) => { tone(f, .45, 'sine', v, null, dl || 0, W); tone(f * 2, .2, 'sine', v * .2, null, dl || 0, W); };   // 柔和鈴聲（走溫暖濾波，融進背景）
+      // 亮亮的長音光暈：和弦高八度、慢慢浮出來再消失，像光從背景透出來
+      const glow = (ch, d, v) => ch.forEach(f => { try { const cc = ac(), t = cc.currentTime, o = cc.createOscillator(), g = cc.createGain(); o.type = 'triangle'; o.frequency.value = f * 2; g.gain.setValueAtTime(.0001, t); g.gain.linearRampToValueAtTime(v, t + d * .4); g.gain.linearRampToValueAtTime(.0001, t + d); o.connect(g); g.connect(W); o.start(t); o.stop(t + d + .05); } catch (e) {} });
+      const kick = (v) => { tone(150, .26, 'sine', v, 40); tone(60, .3, 'sine', v * .5, 38, .01); };
+      const snare = (v) => { noise(.14, v, 'bandpass', 1300, 0, .6); tone(180, .08, 'triangle', v * .6, 140); };
+      const hat = (v) => noise(.03, v, 'bandpass', 5000, 0, 1.5);                       // 偏暗的 hi-hat，不刺耳
       bgmTimer = setInterval(() => {
         if (document.hidden) return;
         const st = bgmStep % 16, bar = Math.floor(bgmStep / 16) % 16, ci = bar % 4, ch = chords[ci], r = roots[ci];
         const verseP = bar < 4, pre = bar === 4 || bar === 5, chorus = bar >= 6 && bar < 14, inter = bar >= 14;
-        // 三角波貝斯：八度彈跳
-        tri(r * (st % 2 ? 4 : 2), .09, .2);
-        // 8-bit 打擊（輕）
-        if (st % 2 === 0) hat(chorus ? .04 : .025);
-        if (!verseP || bar >= 2) { if (st === 0 || st === 8 || (chorus && st === 10)) kik(.35); if (st === 4 || st === 12) snr(chorus ? .1 : .06); }
         if (verseP) {
-          if (st % 4 === 2) pulse(ch[(st >> 2) % 3] * 2, .06, .025);
-          const n = verse[ci][st]; if (n) { const d = len(verse[ci], st); pulse(n, d, .055); pulse(n, d, .02, .15); }   // 主旋律＋回音
+          if (st % 2 === 0) power(r, .07, .035);                                     // 悶音吉他
+          if (st % 2 === 0) tone(r, .12, 'triangle', .16);                           // 貝斯
+          if (st === 0 || st === 10) kick(.45); if (st === 4 || st === 12) snare(.09); if (st % 4 === 2) hat(.03);
+          if (bar >= 1) { const n = verse[ci][st]; if (n) synth(n, len(verse[ci], st), .022); }
+          if (bar >= 2 && st === 0) glow(ch, 1.8, .012);                           // 淡淡的亮光長音
         }
         if (pre) {
           const k = bar - 4;
-          pulse(ch[st % 3] * (2 + k), .09, .03 + k * .01 + st * .001);              // 快速和弦琶音往上爬
-          if (k === 1 && st >= 8) pulse([D5, E5, F5, G5, A5, Bb5, C6, Cs6][st - 8], .09, .05);
-          if (k === 1 && st >= 12) snr(.06 + (st - 12) * .03);
+          if (st % 4 === 0) kick(.5);
+          const roll = k === 0 ? 4 : st < 8 ? 2 : 1; if (st % roll === 0) snare(.05 + k * .03 + st * .003);
+          if (st % 2 === 0) power(r, .09, .035 + k * .012);
+          if (st % 2 === 1) synth(ch[(st >> 1) % 3] * 2, .08, .012 + k * .006);       // EDM 琶音（中音域）
+          tone(r, .1, 'triangle', .12 + k * .03);
+          if (k === 1 && st === 0) tone(120, 1.8, 'sawtooth', .02, 900, 0, W);         // 往上衝（不尖）
+          if (st % 4 === 0) bell(ch[(st >> 2) % 3] * 2, .012 + k * .006);              // 輕輕的鈴聲跟著和弦走
+          if (st === 0) glow(ch, 1.8, .01 + k * .006);
         }
         if (chorus) {
-          pulse(ch[st % 3] * 2, .1, .016);                                         // 經典 8-bit 和弦琶音（每格換音）
-          const n = hook[ci][st]; if (n) { const d = len(hook[ci], st); pulse(n, d, .06, 0, null); pulse(n / 2, d, .025); pulse(n, d, .02, .15); }
+          if (st % 4 === 0) kick(.75);                                               // EDM 四拍
+          if (st === 4 || st === 12) snare(.2);                                      // 搖滾 2、4 拍
+          if (st % 4 === 2) hat(.045);
+          if (st % 2 === 0) power(r, st % 8 === 0 ? .25 : .1, st % 8 === 0 ? .055 : .038);   // 破音吉他和弦
+          if (st % 4 !== 0) tone(r, .1, 'sawtooth', .06, r * .99, 0, W);             // EDM 抽動低音
+          if (st % 4 === 0) tone(r / 2 * 2, .2, 'sine', .25);                         // 重低音
+          if (st === 2 || st === 10) ch.forEach(f => synth(f * 2, .1, .008));         // EDM 和弦
+          const n = hook[ci][st]; if (n) { gtr(n, len(hook[ci], st), .03); if (st === 0 || st === 8) bell(n, .014); }  // 吉他主旋律＋重拍淡淡鈴聲
+          if (st === 0) glow(ch, 1.85, .016);                                        // 亮光長音墊在副歌底下
         }
         if (inter) {
-          const n = fanfare[st]; if (n) { pulse(n, .18, .055); pulse(n * 1.5, .18, .02); }  // 號角（五度和聲）
-          if (st % 4 === 0) pulse(ch[0] * 2, .3, .02);
-          if (bar === 15 && st >= 12) pulse(D5 * (1 + (st - 12) * .25), .08, .04);
+          if (st % 4 === 0) kick(.55); if (st === 4 || st === 12) snare(.12); if (st % 4 === 2) hat(.03);
+          const n = riff[st]; if (n) gtr(n, .12, .032);
+          if (st === 0) glow(ch, 1.8, .012);
+          tone(r, .1, 'triangle', .13);
+          if (bar === 15 && st >= 12) snare(.1 + (st - 12) * .04);
         }
         bgmStep++;
-      }, 100);
+      }, 117);
     } else {
       // 闖關音樂：較快的 8-bit 旋律加鼓
       const mel = [659, 0, 784, 880, 784, 0, 659, 587, 523, 0, 587, 659, 587, 0, 494, 523, 587, 0, 698, 880, 784, 0, 659, 587, 659, 784, 880, 988, 1047, 0, 0, 0];
@@ -248,7 +276,7 @@ var SFX = (function () {
     miss() { api.wrong(); setTimeout(() => api.ouch(), 200); },
     win() { if (!on) return; [523, 659, 784, 1046, 784, 1046].forEach((f, i) => tone(f, i > 3 ? .4 : .16, 'square', .07, null, i * .13)); [0, .3, .55].forEach(d => api.coin(.8 + d)); },
     tap() { if (!on) return; tone(700, .05, 'triangle', .05); },
-    // 背景音樂：menu＝8-bit 電玩冒險主題、battle＝闖關音樂
+    // 背景音樂：menu＝搖滾 EDM 混音、battle＝闖關音樂
     playMusic(name) { want = name; if (cur === name && bgmTimer) return; api.bgmStop(); cur = name; if (!name || !on || !music || !unlocked) return; startTrack(name); },
     bgmStart() { api.playMusic(want || 'battle'); },
     bgmStop() { if (bgmTimer) { clearInterval(bgmTimer); bgmTimer = null; } cur = null; },
