@@ -1151,7 +1151,7 @@ const validPin = v => /^\d{4}$/.test(v);
 let parentMode = false;
 
 /* ---------- 首頁：輸入名字 → 輸入密碼（第一次登入自己設定密碼） ---------- */
-const APP_VERSION = '2026-11-01 16:45';
+const APP_VERSION = '2026-11-01 16:45b';
 async function renderHome() {
   state = null; pads = []; curKid = null; parentMode = false;
   setHeader('小三生大挑戰', null); loading();
@@ -2044,12 +2044,11 @@ function renderWords(set) {
       markWrong();
       // 跳出視窗：重新挑戰或下一題
       const ov = el('div', 'wpmodal'); const bx = el('div', 'wpmodalbox');
-      bx.append(el('div', 'wpm-ic', '✗'), el('div', 'wpm-t', '這個字寫錯了喔！'), el('div', 'wpm-s', '格子裡的字跟正確的字不一樣，不會扣血，要再試一次嗎？'));
+      bx.append(el('div', 'wpm-ic', '✗'), el('div', 'wpm-t', '這個字寫錯了喔！'), el('div', 'wpm-s', '格子裡的字跟正確的字不一樣，不會扣血，再挑戰一次吧！'));
       const mb = el('div', 'wpbtns');
       const close = () => ov.remove();
       const again = el('button', 'primary', '重新挑戰 ↺'); again.onclick = () => { close(); step = 2; draw(); };
-      const skip = el('button', null, queue.length ? '下一題 ▶' : '完成 ▶'); skip.onclick = () => { close(); doneCount++; next(); };   // 跳過：這個字不加金幣，已記進常錯區
-      mb.append(skip, again); bx.append(mb); ov.append(bx); document.body.append(ov);
+      mb.append(again); bx.append(mb); ov.append(bx); document.body.append(ov);
     }
     view.append(btns);
   }
