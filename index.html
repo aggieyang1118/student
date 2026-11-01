@@ -932,6 +932,18 @@ h1#hd{white-space:normal!important;overflow:visible!important;text-overflow:clip
 }
 
 .wppts .sep{opacity:.4;margin:0 2px}
+.wpverdict{max-width:560px;margin:12px auto 0;text-align:center;font-size:20px;font-weight:900;border:3px solid #1f2433;border-radius:14px;padding:10px 14px}
+.wpverdict.good{background:#d9f7dc;color:#14632a}
+.wpverdict.bad{background:#ffe3e3;color:#8a1c1c}
+.wpcheck.good{outline:4px solid #2bbb52;outline-offset:4px;border-radius:12px}
+.wpcheck.bad{outline:4px solid #e5484d;outline-offset:4px;border-radius:12px}
+.wpmodal{position:fixed;inset:0;z-index:60;background:rgba(15,10,30,.55);display:flex;align-items:center;justify-content:center;padding:20px;animation:pageIn .2s}
+.wpmodalbox{background:#fff;border:4px solid #1f2433;border-radius:20px;box-shadow:0 8px 0 #1f2433;padding:22px 20px 18px;max-width:420px;width:100%;text-align:center}
+.wpm-ic{width:64px;height:64px;margin:0 auto 8px;border-radius:50%;background:#ffe3e3;border:4px solid #e5484d;color:#e5484d;font-size:36px;font-weight:900;display:flex;align-items:center;justify-content:center}
+.wpm-t{font-size:24px;font-weight:900;color:#8a1c1c}
+.wpm-s{font-size:16px;color:#555;margin:6px 0 14px;line-height:1.5}
+.wpmodalbox .wpbtns{justify-content:center;flex-wrap:nowrap}
+.appver{text-align:center;color:rgba(255,255,255,.55);font-size:12px;margin-top:6px}
 </style>
 </head>
 <body>
@@ -1139,6 +1151,7 @@ const validPin = v => /^\d{4}$/.test(v);
 let parentMode = false;
 
 /* ---------- 首頁：輸入名字 → 輸入密碼（第一次登入自己設定密碼） ---------- */
+const APP_VERSION = '2026-11-01 16:45';
 async function renderHome() {
   state = null; pads = []; curKid = null; parentMode = false;
   setHeader('小三生大挑戰', null); loading();
@@ -1167,6 +1180,7 @@ async function renderHome() {
   nameSec.append(f, err); app.append(nameSec);
   const pl = el('div', 'parentlink'); const pb = el('button', null, '家長管理'); pb.type = 'button';
   pb.onclick = renderParentLogin; pl.append(pb); app.append(pl);
+  app.append(el('div', 'appver', '版本 ' + APP_VERSION));
   f.onsubmit = async e => {
     e.preventDefault(); err.textContent = '';
     if (!pick) { err.textContent = '先選一個人偶喔！'; sel.scrollIntoView({ behavior: 'smooth' }); return; }
@@ -1977,6 +1991,7 @@ function renderWords(set) {
     fl.style.width = (doneCount / total * 100) + '%'; tr.append(fl);
     bar.append(el('span', null, `${doneCount} / ${total}`), tr, (() => { const x = el('span', 'wppts'); x.innerHTML = `${ICON('coin', 18)} ${set.mistakes ? walletOf().balance : liveCoins(set.id, pts)}`; return x; })()); view.append(bar);
     view.append(el('div', 'wpstep' + (step === 2 ? ' s2' : ''), step === 1 ? (cur.tries ? '再描一次：照著淡淡的字描一描，記住怎麼寫' : '步驟 1：照著淡淡的字描一描（不計分）') : (cur.tries ? '步驟 2：看注音，自己寫寫看（再挑戰，寫對加 5 金幣）' : '步驟 2：看注音，自己寫寫看（寫對加 10 金幣）')));
+    try { document.fonts && document.fonts.load('100px "Noto Sans TC"', cur.c); } catch (e) {}
     const q = el('div', 'wpq'); q.append(el('div', 'wpzy', cur.z), wordHTML(cur)); view.append(q);
     const box = el('div', 'wpbox');
     if (step === 1) box.append(el('div', 'ghost', cur.c));
@@ -1991,8 +2006,6 @@ function renderWords(set) {
       const st = d.item.strokes;
       if (!st.length) { tip.textContent = step === 1 ? '先照著淡淡的字描一描喔！' : '還沒寫字喔！看注音，把字寫在格子裡。'; tip.className = 'wptip show'; return; }
       if (step === 1) { step = 2; draw(); return; }
-      const sim = inkSim(st, cur.c);
-      if (sim < 0.42) { tip.textContent = '這個字看起來還沒寫完整，再寫寫看喔！（可以按「清除」重寫）'; tip.className = 'wptip show'; return; }
       check(st);
     };
     if (step === 2) {
@@ -2004,21 +2017,41 @@ function renderWords(set) {
     view.append(btns, tip);
   }
   function check(strokes) {
-    view.querySelector('.wpbtns').remove();
+    // 自動對答案：把我寫的字和正確的字比對
+    const ok = writeJudge(strokes, cur.c);
+    view.querySelector('.wpbtns').remove(); const tp = view.querySelector('.wptip'); if (tp) tp.remove();
     const off = document.createElement('canvas'); off.width = off.height = 240;
     const c = off.getContext('2d'); c.fillStyle = '#fff'; c.fillRect(0, 0, 240, 240); paint(c, 240, 240, strokes, 6);
     view.querySelector('.wpbox').remove();
-    const ck = el('div', 'wpcheck');
+    const ck = el('div', 'wpcheck' + (ok ? ' good' : ' bad'));
     const mine = el('div'); const im = el('img'); im.src = off.toDataURL(); mine.append(im, el('div', null, '我寫的'));
     const ans = el('div'); ans.append(el('div', 'ans', cur.c), el('div', null, '正確的字'));
     ck.append(mine, ans); view.append(ck);
     const btns = el('div', 'wpbtns');
-    const gain = maxed ? 0 : (cur.tries ? 5 : 10);
-    const ok = el('button', 'primary', gain ? `寫對了 +${gain} 金幣 ✓` : '寫對了 ✓'); const ng = el('button', null, '再挑戰一次 ↺');
-    ok.onclick = () => { doneCount++; wb.hit(1, ok, !gain); pts += gain; flash(gain ? `+${gain} 金幣！` : '寫對了！'); if (gain) { SFX.coin(); SFX.coin(.12); } if (gain && saveProg) saveProg(pts); if (!cur.tries) { if (set.mistakes) bumpMistakes([{ c: cur.c, delta: -1 }]); } next(); };
-    // 寫錯了：不扣血，留在同一個字，先描一次再自己寫（這個字就不能拿 +10 了）
-    ng.onclick = () => { markWrong(); step = 2; draw(); };   // 同一個字直接再寫一次（想先描可以按「忘記了，重描」）
-    btns.append(ng, ok); view.append(btns);
+    if (ok) {
+      const gain = maxed ? 0 : (cur.tries ? 5 : 10);
+      view.append(el('div', 'wpverdict good', gain ? `✓ 寫對了！+${gain} 金幣` : '✓ 寫對了！'));
+      doneCount++; wb.hit(1, ck, !gain); pts += gain; if (gain) { SFX.coin(); SFX.coin(.12); } if (gain && saveProg) saveProg(pts);
+      if (!cur.tries && set.mistakes) bumpMistakes([{ c: cur.c, delta: -1 }]);
+      flash(gain ? `+${gain} 金幣！` : '寫對了！');
+      let moved = false; const go = () => { if (moved) return; moved = true; next(); };
+      const nx = el('button', 'primary', queue.length ? '下一題 ▶' : '完成 ▶'); nx.onclick = go;
+      btns.append(nx); setTimeout(() => { if (view.isConnected) go(); }, 1600);   // 寫對了自動進下一題
+      const bar = view.querySelector('.wppts'); if (bar) bar.innerHTML = `${ICON('coin', 18)} ${set.mistakes ? walletOf().balance : liveCoins(set.id, pts)}`;
+    } else {
+      // 寫錯或亂寫：不扣血、不扣分，問要不要再挑戰
+      SFX.wrong && SFX.wrong();
+      markWrong();
+      // 跳出視窗：重新挑戰或下一題
+      const ov = el('div', 'wpmodal'); const bx = el('div', 'wpmodalbox');
+      bx.append(el('div', 'wpm-ic', '✗'), el('div', 'wpm-t', '這個字寫錯了喔！'), el('div', 'wpm-s', '格子裡的字跟正確的字不一樣，不會扣血，要再試一次嗎？'));
+      const mb = el('div', 'wpbtns');
+      const close = () => ov.remove();
+      const again = el('button', 'primary', '重新挑戰 ↺'); again.onclick = () => { close(); step = 2; draw(); };
+      const skip = el('button', null, queue.length ? '下一題 ▶' : '完成 ▶'); skip.onclick = () => { close(); doneCount++; next(); };   // 跳過：這個字不加金幣，已記進常錯區
+      mb.append(skip, again); bx.append(mb); ov.append(bx); document.body.append(ov);
+    }
+    view.append(btns);
   }
   function markWrong() { if (!cur.tries) { firstWrong.add(cur.c); if (!set.mistakes) bumpMistakes([{ c: cur.c, z: cur.z, w: cur.w, delta: 1 }]); } cur.tries++; }
   function flash(t) {
@@ -2043,6 +2076,53 @@ function renderWords(set) {
   }
   next();
   window.scrollTo(0, 0);
+}
+
+/* ---------- 自動對答案：比較「正確的字」和「我寫的字」彼此的距離（位置、大小不影響） ---------- */
+// 用好幾種字型（黑體、楷書…）各比一次，只要有一種對得上就算對；小朋友寫的是楷書，跟楷書字型最像
+const JUDGE_FONTS = ['"Noto Sans TC"', '"PingFang TC"', '"Microsoft JhengHei"', '"Kaiti TC"', '"BiauKai"', '"DFKai-SB"', 'KaiTi', 'serif', 'sans-serif'];
+function writeJudge(strokes, ch) {
+  try {
+    const len = st => st.reduce((a, p, i) => i ? a + Math.hypot(p[0] - st[i - 1][0], p[1] - st[i - 1][1]) : 0, 0);
+    const main = strokes.filter(st => len(st) > .03);
+    if (main.length) { const mp = main.flat(), cx = mp.reduce((a, p) => a + p[0], 0) / mp.length, cy = mp.reduce((a, p) => a + p[1], 0) / mp.length;
+      strokes = strokes.filter(st => len(st) > .03 || Math.hypot(st[0][0] - cx, st[0][1] - cy) < .35); }
+    const S = 64, pts = strokes.flat(); if (pts.length < 6) return false;
+    const mk = () => { const o = document.createElement('canvas'); o.width = o.height = S; const oc = o.getContext('2d'); oc.fillStyle = '#fff'; oc.fillRect(0, 0, S, S); return [o, oc]; };
+    const mask = cv => { const dd = cv.getContext('2d').getImageData(0, 0, S, S).data, m = []; for (let i = 0; i < S * S; i++) m.push(dd[i * 4] < 140); return m; };
+    const dist = M => { const D = M.map(v => v ? 0 : 1e9);
+      for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) { const i = y * S + x; if (x > 0) D[i] = Math.min(D[i], D[i - 1] + 1); if (y > 0) D[i] = Math.min(D[i], D[i - S] + 1); if (x > 0 && y > 0) D[i] = Math.min(D[i], D[i - S - 1] + 1.4); if (x < S - 1 && y > 0) D[i] = Math.min(D[i], D[i - S + 1] + 1.4); }
+      for (let y = S - 1; y >= 0; y--) for (let x = S - 1; x >= 0; x--) { const i = y * S + x; if (x < S - 1) D[i] = Math.min(D[i], D[i + 1] + 1); if (y < S - 1) D[i] = Math.min(D[i], D[i + S] + 1); if (x < S - 1 && y < S - 1) D[i] = Math.min(D[i], D[i + S + 1] + 1.4); if (x > 0 && y < S - 1) D[i] = Math.min(D[i], D[i + S - 1] + 1.4); }
+      return D; };
+    // 我寫的字：縮放到方框中間
+    let ux0 = 1e9, uy0 = 1e9, ux1 = -1e9, uy1 = -1e9; pts.forEach(([x, y]) => { ux0 = Math.min(ux0, x); uy0 = Math.min(uy0, y); ux1 = Math.max(ux1, x); uy1 = Math.max(uy1, y); });
+    const uw = Math.max(ux1 - ux0, .02), uh = Math.max(uy1 - uy0, .02), uk = Math.max(uw, uh), ox = (uk - uw) / 2, oy = (uk - uh) / 2;
+    const [uo, uc] = mk(); uc.strokeStyle = '#000'; uc.lineWidth = 4; uc.lineCap = uc.lineJoin = 'round';
+    const T = (x, y) => [2 + ((x - ux0 + ox) / uk) * (S - 4), 2 + ((y - uy0 + oy) / uk) * (S - 4)];
+    strokes.forEach(st => { uc.beginPath(); st.forEach((p, i) => { const [X, Y] = T(p[0], p[1]); i ? uc.lineTo(X, Y) : uc.moveTo(X, Y); }); if (st.length === 1) { const [X, Y] = T(st[0][0], st[0][1]); uc.lineTo(X + .5, Y); } uc.stroke(); });
+    const U = mask(uo), DU = dist(U); const nu = U.filter(Boolean).length; if (!nu) return false;
+    const seen = new Set(); let best = null;
+    for (const f of JUDGE_FONTS) {
+      const g = document.createElement('canvas'); g.width = g.height = 200; const c = g.getContext('2d');
+      c.fillStyle = '#fff'; c.fillRect(0, 0, 200, 200); c.fillStyle = '#000'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = '170px ' + f; c.fillText(ch, 100, 106);
+      const d = c.getImageData(0, 0, 200, 200).data; let x0 = 200, y0 = 200, x1 = 0, y1 = 0, sig = 0;
+      for (let y = 0; y < 200; y++) for (let x = 0; x < 200; x++) if (d[(y * 200 + x) * 4] < 128) { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); sig += x * 3 + y * 7; }
+      if (x1 <= x0 || seen.has(sig)) continue; seen.add(sig);            // 沒有這個字型（畫出來一樣）就跳過
+      const w = x1 - x0 + 1, h = y1 - y0 + 1, k = Math.max(w, h);
+      const [go, gc] = mk(); gc.drawImage(g, x0 - (k - w) / 2, y0 - (k - h) / 2, k, k, 2, 2, S - 4, S - 4);
+      const G = mask(go), DG = dist(G);
+      let ng = 0, sg = 0, cg = 0, su = 0;
+      for (let i = 0; i < S * S; i++) { if (G[i]) { ng++; sg += Math.min(DU[i], 12); if (DU[i] <= 3) cg++; } if (U[i]) su += Math.min(DG[i], 12); }
+      if (!ng) continue;
+      const m = { gu: sg / ng, ug: su / nu, rec: cg / ng, ink: nu / ng };
+      m.score = m.gu + m.ug;
+      if (!best || m.score < best.score) best = m;
+    }
+    if (!best) return true;
+    if (window.__judgeDebug) window.__judgeDebug.push({ ch, gu: +best.gu.toFixed(2), ug: +best.ug.toFixed(2), rec: +best.rec.toFixed(2), ink: +best.ink.toFixed(2), fonts: seen.size });
+    // 寬鬆判定：只有「亂寫」才算錯
+    return best.gu <= 3.4 && best.ug <= 2.8 && best.rec >= 0.5 && best.ink <= 2.2;
+  } catch (e) { return true; }
 }
 
 /* ---------- 手寫比對：把我寫的字和正確的字縮放到同樣大小，比較筆畫位置有沒有大致重疊 ---------- */
