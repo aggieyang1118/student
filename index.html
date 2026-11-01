@@ -2,6 +2,9 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>三年級平板考卷</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -967,13 +970,13 @@ h1#hd{white-space:normal!important;overflow:visible!important;text-overflow:clip
   </div>
 </div>
 
-<script src="icons.js"></script>
-<script src="avatars.js"></script>
-<script src="battle.js"></script>
-<script src="exams_science.js"></script>
-<script src="exams_social.js"></script>
-<script src="exams_math.js"></script>
-<script src="exams_english.js"></script>
+<script src="icons.js?v=20261101-1652"></script>
+<script src="avatars.js?v=20261101-1652"></script>
+<script src="battle.js?v=20261101-1652"></script>
+<script src="exams_science.js?v=20261101-1652"></script>
+<script src="exams_social.js?v=20261101-1652"></script>
+<script src="exams_math.js?v=20261101-1652"></script>
+<script src="exams_english.js?v=20261101-1652"></script>
 <script>
 /* ============================================================
    設定區：年級、科目、考卷
@@ -1151,7 +1154,7 @@ const validPin = v => /^\d{4}$/.test(v);
 let parentMode = false;
 
 /* ---------- 首頁：輸入名字 → 輸入密碼（第一次登入自己設定密碼） ---------- */
-const APP_VERSION = '2026-11-01 16:45b';
+const APP_VERSION = '2026-11-01 16:52';
 async function renderHome() {
   state = null; pads = []; curKid = null; parentMode = false;
   setHeader('小三生大挑戰', null); loading();
