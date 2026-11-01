@@ -303,7 +303,7 @@ var SFX = (function () {
 
 /* ---------- 戰鬥面板 ---------- */
 function createBattle(opts) {
-  const { subject, maxHP, kidAvatar, kidName, label, onDeath } = opts;
+  const { subject, maxHP, kidAvatar, kidName, label, onDeath, noCoin: allNoCoin } = opts;
   const m = MONSTERS[subject] || MONSTERS.math;
   let hp = maxHP, hearts = 5, combo = 0, dead = false, over = false;
   const wrap = document.createElement('div'); wrap.className = 'arena';
@@ -339,7 +339,7 @@ function createBattle(opts) {
     hit(dmg, from, noCoin) {
       if (dead || over) return;
       combo++; const bonus = combo >= 3 ? 1.5 : 1, d = Math.round(dmg * 10) / 10;
-      hp -= dmg; SFX.hit(combo, noCoin);
+      noCoin = noCoin || allNoCoin; hp -= dmg; SFX.hit(combo, noCoin);
       anim(me, 'lunge'); missile(me, foe);
       setTimeout(() => { anim(foe, 'hurt'); boom(foe); pop(foe, `-${d}${bonus > 1 ? ' 爆擊!' : ''}`, bonus > 1 ? 'crit' : ''); }, 420);
       draw();

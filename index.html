@@ -908,6 +908,30 @@ h1#hd{white-space:normal!important;overflow:visible!important;text-overflow:clip
   .hdav{flex:none}
   .hdav svg{width:34px;height:42px}
 }
+.wptip{display:none;margin:10px auto 0;max-width:520px;text-align:center;background:#fff3cd;border:3px solid #1f2433;border-radius:12px;padding:8px 12px;font-weight:700;color:#7a4a00}
+.wptip.show{display:block;animation:pageIn .25s}
+.maxednote{margin:0 0 14px;background:#fff3cd;border:3px solid #1f2433;border-radius:12px;padding:8px 14px;font-weight:700;color:#7a4a00;text-align:center}
+.wpbtns .forgot{background:linear-gradient(180deg,#fff 0%,#fff 55%,#ffe9c7 56%)!important;color:#8a4b00}
+@media (max-width:600px){.wpbtns{flex-wrap:wrap;gap:10px!important}.wpbtns button{flex:1 1 40%;font-size:17px!important;white-space:nowrap;padding-left:8px!important;padding-right:8px!important;min-height:54px}}
+
+/* 看答案券：放在愛心旁邊的票券按鈕 */
+.ticketbtn{position:relative!important;flex:none;align-self:center;display:flex!important;align-items:center;gap:8px;margin-left:6px;
+  min-height:0!important;max-height:none!important;height:auto!important;top:auto!important;right:auto!important;bottom:auto!important;padding:8px 16px 8px 14px!important;
+  background:linear-gradient(180deg,#ffe27a 0%,#ffc83d 100%)!important;color:#3a2600;border:3px solid #1f2433!important;border-radius:12px!important;
+  box-shadow:0 4px 0 #1f2433!important;white-space:nowrap}
+.ticketbtn::before,.ticketbtn::after{content:"";position:absolute;top:50%;width:12px;height:12px;margin-top:-6px;border-radius:50%;background:#2a1d55;border:3px solid #1f2433}
+.ticketbtn::before{left:-8px}.ticketbtn::after{right:-8px}
+.ticketbtn .tk-ic{display:flex;padding-right:8px;border-right:2px dashed rgba(31,36,51,.45)}
+.ticketbtn .tk-tx{font-size:17px;font-weight:900}
+.ticketbtn .tk-n{background:#1f2433;color:#ffd84d;font-size:13px;font-weight:900;border-radius:8px;padding:1px 7px}
+.ticketbtn.none{background:linear-gradient(180deg,#fff6d8,#ffe7a6)!important}
+.ticketbtn:active{transform:translateY(3px);box-shadow:0 1px 0 #1f2433!important}
+@media (max-width:600px){
+  .arena .fighter.me .ticketbtn{position:absolute!important;right:12px!important;bottom:32px!important;margin:0;padding:5px 12px 5px 10px!important;z-index:2}
+  .ticketbtn .tk-tx{font-size:14px}.ticketbtn .tk-ic svg{width:22px;height:22px}
+}
+
+.wppts .sep{opacity:.4;margin:0 2px}
 </style>
 </head>
 <body>
@@ -1391,11 +1415,22 @@ function shownSubjects() { return SUBJECTS.filter(s => !Store.cat.hiddenSubjects
 function shownExams(grade, sid) { return EXAMS.filter(e => e.grade === grade && e.subject === sid && !Store.cat.hiddenExams.includes(e.id) && !Store.cat.deletedExams.includes(e.id)); }
 
 /* ---------- 小朋友：科目 ---------- */
+let recChain = Promise.resolve();
+// 練習中途就存進度：第一次存＝新的一次紀錄，之後都更新同一筆（中途按返回，金幣也會算進去）
+// 練習頁的金幣：顯示和主畫面一樣的總金幣，練習中即時增加（每份以最高分換算，所以不會重複多算）
+// 金幣只來自「國語生字」和「數學九九乘法」：1 分 = 1 金幣；考卷不給金幣，改給獎勵卡
+function coinOf(id, best) { const ex = EXAMS.find(e => e.id === id); return ex && (ex.kind === 'words' || ex.kind === 'drill') ? (best || 0) : 0; }
+function isCardExam(id) { const ex = EXAMS.find(e => e.id === id); return !!ex && ex.kind !== 'words' && ex.kind !== 'drill'; }
+function liveCoins(id, pts) {
+  const r = curKid && curKid.rec && curKid.rec[id], prev = coinOf(id, r && r.best);
+  return walletOf().balance - prev + Math.max(prev, coinOf(id, pts));
+}
+function progressSaver(id) { let first = true; return score => { const nw = first; first = false; recChain = recChain.then(() => Store.saveRecord(curKid.id, id, score, nw)).catch(() => {}); return recChain; }; }
 async function renderKid(kid) {
   curKid = kid; state = null; pads = [];
   setHeader(`${kid.name}（${kid.grade}）`, parentMode ? renderParent : renderHome); backBtn.textContent = parentMode ? '‹ 家長管理' : '登出'; loading();
   let rec;
-  try { await Promise.all([mistChain, wrongChain, walletChain]).catch(() => {}); [rec] = await Promise.all([Store.records(kid.id), Store.catalog()]); } catch (e) { loadFail(); return; }
+  try { await Promise.all([mistChain, wrongChain, walletChain, recChain]).catch(() => {}); [rec] = await Promise.all([Store.records(kid.id), Store.catalog()]); } catch (e) { loadFail(); return; }
   curKid.rec = rec;
   app.innerHTML = '';
   setHeader(`${kid.name}（${kid.grade}）`, parentMode ? renderParent : renderHome); backBtn.textContent = parentMode ? '‹ 家長管理' : '登出';
@@ -1461,8 +1496,8 @@ function renderSubject(sid) {
       const r = rec[ex.id], isW = ex.kind === 'words', isD = ex.kind === 'drill';
       const b = el('button', 'examrow' + (r ? ' cleared' : '')); b.dataset.n = items.indexOf(ex) + 1;
       const t = el('b', null, ex.title);
-      if (isW) t.append(el('span', 'meta', `${ex.words.length} 個字・每字寫對加 10 分` + (r ? `・練習過 ${r.attempts} 次・最高 ${r.best} 分・最近 ${r.date}` : '')));
-      else if (isD) t.append(el('span', 'meta', `${ex.count} 題・每題 ${ex.per || 2} 分` + (r ? `・玩過 ${r.attempts} 次・最高 ${r.best} 分` : '')));
+      if (isW) t.append(el('span', 'meta', `${ex.words.length} 個字・第一次寫對加 10 金幣、再挑戰寫對加 5 金幣` + (r ? `・練習過 ${r.attempts} 次・最高 ${r.best} 分・最近 ${r.date}` : '')));
+      else if (isD) t.append(el('span', 'meta', `${ex.count} 題・每題答對 +${ex.per || 2} 金幣` + (r ? `・玩過 ${r.attempts} 次・最高 ${r.best} 金幣` : '')));
       else if (r) t.append(el('span', 'meta', `考過 ${r.attempts} 次・最高 ${r.best} 分・最近 ${r.date}`));
       b.append(t);
       if (isW) b.append(el('span', 'badge ' + (r ? 'done' : 'todo'), r ? `${r.score} / ${ex.words.length * 10} 分` : '未練習'));
@@ -1588,7 +1623,8 @@ function walletRaw() {
   return w;
 }
 function earnedCoins() {
-  return Object.entries((curKid && curKid.rec) || {}).filter(([k]) => !k.startsWith('_')).reduce((a, [, r]) => a + Math.round((r.best || 0) / 10), 0);
+  // 國語生字、九九乘法：1 分 = 1 金幣；考卷：不給金幣（用每份的最高分算）
+  return Object.entries((curKid && curKid.rec) || {}).filter(([k]) => !k.startsWith('_')).reduce((a, [k, r]) => a + coinOf(k, r && r.best), 0);
 }
 function walletOf() { const w = walletRaw(); w.balance = earnedCoins() + w.extraCoins - w.spentCoins; return w; }
 function saveWallet(w) {
@@ -1598,15 +1634,26 @@ function saveWallet(w) {
 }
 // 每份考卷第一次達到：80 分以上 → 優點卡；100 分 → 金卡；每累積 5 份 100 分 → 鑽石卡
 function syncAwards() {
+  // 獎勵卡規則（每份考卷只算一次，同一份拿過 100 分就不再累計）：
+  //   100 分：第 1～4 份各送 1 張金卡，累積到第 5、10、15… 份時改送 1 張鑽石卡
+  //   90～99 分：第 1～9 份各送 1 張優點卡，累積到第 10、20… 份時改送 1 張金卡
+  //   80～89 分：每份送 1 張優點卡
   const w = walletRaw(), got = { diamond: 0, gold: 0, merit: 0 };
-  let c100 = 0;
-  Object.entries(curKid.rec || {}).filter(([k]) => !k.startsWith('_')).forEach(([id, r]) => {
-    const pct = examPercent(id, r); if (pct === null) return;
-    if (pct >= 80 && !w.awarded.merit.includes(id)) { w.awarded.merit.push(id); w.cards.merit++; got.merit++; }
-    if (pct >= 100) { c100++; if (!w.awarded.gold.includes(id)) { w.awarded.gold.push(id); w.cards.gold++; got.gold++; } }
+  const recs = Object.entries(curKid.rec || {}).filter(([k]) => !k.startsWith('_') && isCardExam(k)).map(([id, r]) => [id, examPercent(id, r)]).filter(([, p]) => p !== null);
+  const lvl = p => p >= 100 ? 3 : p >= 90 ? 2 : p >= 80 ? 1 : 0;
+  if (!w.v2) { // 第一次換成新規則：把已經拿過的卡片當作已發放，不重複送
+    w.v2 = { lv: {}, c100: 0, c90: 0 };
+    recs.forEach(([id, p]) => { const L = lvl(p); if (!L) return; w.v2.lv[id] = L; if (L === 3) w.v2.c100++; if (L === 2) w.v2.c90++; });
+    saveWallet(w); return got;
+  }
+  recs.forEach(([id, p]) => {
+    const L = lvl(p), prev = w.v2.lv[id] || 0;
+    if (L <= prev) return;
+    w.v2.lv[id] = L;
+    if (L === 3) { w.v2.c100++; if (w.v2.c100 % 5 === 0) { w.cards.diamond++; got.diamond++; } else { w.cards.gold++; got.gold++; } }
+    else if (L === 2) { w.v2.c90++; if (w.v2.c90 % 10 === 0) { w.cards.gold++; got.gold++; } else { w.cards.merit++; got.merit++; } }
+    else if (L === 1) { w.cards.merit++; got.merit++; }
   });
-  const d = Math.floor(c100 / 5) - w.awarded.dBonus;
-  if (d > 0) { w.awarded.dBonus += d; w.cards.diamond += d; got.diamond += d; }
   if (got.diamond || got.gold || got.merit) saveWallet(w);
   return got;
 }
@@ -1647,7 +1694,7 @@ function renderShop(msgText) {
   const list = el('div', 'shoplist');
   SHOP.forEach(it => {
     const row = el('div', 'shoprow');
-    const icon = it.ticket ? 'ticket' : CARDS[{ merit: 1, gold: 2, diamond: 3 }[it.from]].icon;
+    const icon = it.ticket ? 'coin' : CARDS[{ merit: 1, gold: 2, diamond: 3 }[it.from]].icon;
     const can = it.ticket ? w.balance >= it.cost : w.cards[it.from] >= it.n;
     const si = el('span', 'shopicon'); si.innerHTML = ICON(icon, 40); row.append(si, el('b', null, it.label));
     const btn = el('button', can ? 'primary' : '', can ? '兌換' : (it.ticket ? '金幣不夠' : '卡片不夠')); btn.disabled = !can;
@@ -1661,7 +1708,7 @@ function renderShop(msgText) {
     row.append(btn); list.append(row);
   });
   app.append(list);
-  app.append(el('p', 'hint shophint', '怎麼拿卡片：每份考卷第一次考到 80 分以上得 1 張優點卡、考到 100 分得 1 張金卡，每累積 5 份 100 分再送 1 張鑽石卡。看答案券在作答時按「💡 看答案」使用，每張可以看一題的答案。'));
+  app.append(el('p', 'hint shophint', '怎麼拿金幣：國語生字和九九乘法，1 分 = 1 金幣。怎麼拿卡片（考卷才有，每份只算一次，拿過 100 分就不再累計）：考 100 分 → 第 1～4 份各得 1 張金卡，第 5、10、15… 份改得 1 張鑽石卡；考 90 幾分 → 第 1～9 份各得 1 張優點卡，第 10、20… 份改得 1 張金卡；考 80 幾分 → 得 1 張優點卡。看答案券在作答時按「看答案」使用，每張可以看一題的答案。'));
   window.scrollTo(0, 0);
 }
 function useHint() {
@@ -1684,22 +1731,25 @@ function useHint() {
 }
 function updateHintBtn() {
   const b = document.querySelector('.hintbtn'); if (!b || !curKid) return;
-  const w = walletOf(); b.innerHTML = w.tickets > 0 ? `${ICON('bulb', 16)} 看答案 券×${w.tickets}` : `${ICON('bulb', 16)} 看答案 ${ICON('coin', 14)}100`;
+  const w = walletOf(); b.classList.toggle('none', !w.tickets);
+  b.innerHTML = `<span class="tk-ic">${ICON('ticket', 30)}</span><b class="tk-tx">使用看答案券</b>${w.tickets > 0 ? `<span class="tk-n">×${w.tickets}</span>` : ''}`;
 }
 function flashMsg(t) { const f = el('div', 'wpflash small', t); document.body.append(f); setTimeout(() => f.remove(), 1400); }
 
 const CARDS = {
-  3: { cls: 'diamond', icon: 'gem', name: '鑽石大神卡', joke: '腦袋快到 Wi-Fi 都追不上，怪獸看到你都自動投降！', rule: '每累積 5 份 100 分送 1 張' },
-  2: { cls: 'gold', icon: 'medal', name: '金光閃閃卡', joke: '聰明到發光，關主都要戴墨鏡才敢看你！', rule: '每份考卷第一次考 100 分' },
-  1: { cls: 'merit', icon: 'star', name: '優點認證卡', joke: '努力的樣子帥到掉渣，連橡皮擦都為你鼓掌！', rule: '每份考卷第一次考 80 分以上' }
+  3: { cls: 'diamond', icon: 'gem', name: '鑽石大神卡', joke: '腦袋快到 Wi-Fi 都追不上，怪獸看到你都自動投降！', rule: '每累積 5 份 100 分，送 1 張' },
+  2: { cls: 'gold', icon: 'medal', name: '金光閃閃卡', joke: '聰明到發光，關主都要戴墨鏡才敢看你！', rule: '第 1～4 份 100 分各送 1 張；每累積 10 份 90 分以上也送 1 張' },
+  1: { cls: 'merit', icon: 'star', name: '優點認證卡', joke: '努力的樣子帥到掉渣，連橡皮擦都為你鼓掌！', rule: '第 1～9 份 90 幾分各送 1 張；考 80 幾分也送 1 張' }
 };
+function isMaxed(id) { const r = curKid && curKid.rec && curKid.rec[id]; const p = examPercent(id, r); return p !== null && p >= 100; }
+function maxedNote() { return el('div', 'maxednote', '這份已經拿過 100 分了！這次是練習，不會再增加金幣和獎勵卡。'); }
 function examPercent(id, r) {
   const ex = EXAMS.find(e => e.id === id); if (!ex || !r) return null;
   if (ex.kind === 'words') return Math.round((r.best || 0) / (ex.words.length * 10) * 100);
   return r.best || 0;
 }
 function cardInfo(rec) {
-  const pcts = Object.entries(rec || {}).filter(([k]) => !k.startsWith('_')).map(([k, r]) => examPercent(k, r)).filter(x => x !== null);
+  const pcts = Object.entries(rec || {}).filter(([k]) => !k.startsWith('_') && isCardExam(k)).map(([k, r]) => examPercent(k, r)).filter(x => x !== null);
   const c100 = pcts.filter(x => x >= 100).length, c90 = pcts.filter(x => x >= 90).length, c80 = pcts.filter(x => x >= 80 && x < 90).length;
   let tier = 0;
   if (c100 >= 5) tier = 3;
@@ -1814,11 +1864,13 @@ function renderDrill(set) {
   let done = 0, firstOK = 0, pts = 0, cur = null, typed = '', t0 = 0, busy = false; const LIMIT = 10;
   app.innerHTML = '';
   let over = false;
-  const wb = createBattle({ subject: 'math', maxHP: total, kidAvatar: curKid.avatar, kidName: curKid.name,
+  const maxed = isMaxed(set.id);
+  const wb = createBattle({ subject: 'math', maxHP: total, kidAvatar: curKid.avatar, kidName: curKid.name, noCoin: maxed,
     onDeath: () => { over = true; busy = true; cancelAnimationFrame(raf); showGameOver(() => renderDrill(set)); } });
-  const view = el('div', 'drill'); app.append(wb.el, view);
+  const view = el('div', 'drill'); app.append(wb.el); if (maxed) app.append(maxedNote()); app.append(view);
   const bar = el('div', 'wpbar'); const tr = el('div', 'track'); const fl = el('div', 'fill'); tr.append(fl);
   const cnt = el('span'), pt = el('span', 'wppts'); bar.append(cnt, tr, pt);
+  const saveProg = progressSaver(set.id);
   const card = el('div', 'dcard'); const qEl = el('div', 'dq'); const msg = el('div', 'dmsg'); card.append(qEl, msg);
   const timer = el('div', 'dtimer'); const tfill = el('i'); timer.append(tfill);
   const pad = el('div', 'dpad');
@@ -1829,7 +1881,7 @@ function renderDrill(set) {
     qEl.innerHTML = cur.mode === 'p' ? `${cur.x} × ${cur.y} = ${box}` : cur.mode === 'x' ? `${box} × ${cur.y} = ${cur.p}` : `${cur.x} × ${box} = ${cur.p}`;
   }
   function stat() {
-    cnt.textContent = `${done} / ${total}`; fl.style.width = (done / total * 100) + '%'; pt.innerHTML = `${ICON('coin', 18)} ${pts}`;
+    cnt.textContent = `${done} / ${total}`; fl.style.width = (done / total * 100) + '%'; pt.innerHTML = `${ICON('coin', 18)} ${liveCoins(set.id, pts)}`;
   }
   let raf = 0;
   function tick() {
@@ -1863,7 +1915,7 @@ function renderDrill(set) {
     busy = true; const sec = (Date.now() - t0) / 1000; cancelAnimationFrame(raf);
     if (+typed === cur.ans) {
       done++; wb.hit(1, qEl, !!cur.tries);
-      if (!cur.tries) { firstOK++; const g = set.per || 2; pts += g; msg.textContent = sec <= 3 ? `⚡ 快攻！+${g} 分` : `答對了！+${g} 分`; }
+      if (!cur.tries) { firstOK++; const g = set.per || 2; pts += g; msg.textContent = sec <= 3 ? `⚡ 快攻！+${g} 金幣` : `答對了！+${g} 金幣`; if (!maxed) { SFX.coin(); } if (!maxed) saveProg(pts); }
       else msg.textContent = '答對了！';
       msg.className = 'dmsg ok'; card.classList.add('good'); setTimeout(() => { card.classList.remove('good'); if (!over) next(); }, 650);
     } else {
@@ -1882,14 +1934,14 @@ function renderDrill(set) {
     view.innerHTML = '';
     const d = el('div', 'wpdone');
     d.append(el('div', 'big', '🎉 闖關完成！'), el('div', 'wpscore', `${score} 分`), el('div', null, `${total} 題中，第一次就答對 ${firstOK} 題`));
-    d.append(el('div', 'hint', `每題 ${set.per || 2} 分，第一次就答對才得分。`));
+    d.append(el('div', 'hint', `每題第一次就答對 +${set.per || 2} 金幣。`));
     view.append(d);
     const btns = el('div', 'wpbtns');
     const again = el('button', null, '再玩一次'); again.onclick = () => renderDrill(set);
     const back = el('button', 'primary', '回到數學'); back.onclick = () => backTo();
     btns.append(again, back); view.append(btns);
     setTimeout(() => celebrate(score), 50);
-    Store.saveRecord(curKid.id, set.id, score, true).catch(() => view.append(statusLine('紀錄沒存成功', true)));
+    saveProg(score).catch(() => view.append(statusLine('紀錄沒存成功', true)));
   }
   next();
   window.scrollTo(0, 0);
@@ -1904,10 +1956,12 @@ function renderWords(set) {
   const total = queue.length; let doneCount = 0; const firstWrong = new Set();
   let cur = null, step = 1, pts = 0;
   const view = el('div', 'wp'); app.innerHTML = '';
-  const wb = createBattle({ subject: set.mistakes ? '_mist' : set.subject, maxHP: total, kidAvatar: curKid.avatar, kidName: curKid.name,
+  const maxed = !set.mistakes && isMaxed(set.id);
+  const wb = createBattle({ subject: set.mistakes ? '_mist' : set.subject, maxHP: total, kidAvatar: curKid.avatar, kidName: curKid.name, noCoin: maxed,
     onDeath: () => { view.querySelectorAll('button').forEach(b => b.disabled = true); showGameOver(() => renderWords(set)); } });
-  app.append(wb.el, view);
+  app.append(wb.el); if (maxed) app.append(maxedNote()); app.append(view);
   const pad = { item: { strokes: [] } };
+  const saveProg = set.mistakes ? null : progressSaver(set.id);
   function next() {
     if (!queue.length) return finish();
     cur = queue.shift(); step = 1; draw();
@@ -1921,8 +1975,8 @@ function renderWords(set) {
     view.innerHTML = '';
     const bar = el('div', 'wpbar'); const tr = el('div', 'track'); const fl = el('div', 'fill');
     fl.style.width = (doneCount / total * 100) + '%'; tr.append(fl);
-    bar.append(el('span', null, `${doneCount} / ${total}`), tr, (() => { const x = el('span', 'wppts'); x.innerHTML = `${ICON('coin', 18)} ${pts}`; return x; })()); view.append(bar);
-    view.append(el('div', 'wpstep' + (step === 2 ? ' s2' : ''), step === 1 ? '步驟 1：照著淡淡的字描一描（不計分）' : (cur.tries ? '步驟 2：看注音，自己寫寫看（再練一次）' : '步驟 2：看注音，自己寫寫看（寫對加 10 分）')));
+    bar.append(el('span', null, `${doneCount} / ${total}`), tr, (() => { const x = el('span', 'wppts'); x.innerHTML = `${ICON('coin', 18)} ${set.mistakes ? walletOf().balance : liveCoins(set.id, pts)}`; return x; })()); view.append(bar);
+    view.append(el('div', 'wpstep' + (step === 2 ? ' s2' : ''), step === 1 ? (cur.tries ? '再描一次：照著淡淡的字描一描，記住怎麼寫' : '步驟 1：照著淡淡的字描一描（不計分）') : (cur.tries ? '步驟 2：看注音，自己寫寫看（再挑戰，寫對加 5 金幣）' : '步驟 2：看注音，自己寫寫看（寫對加 10 金幣）')));
     const q = el('div', 'wpq'); q.append(el('div', 'wpzy', cur.z), wordHTML(cur)); view.append(q);
     const box = el('div', 'wpbox');
     if (step === 1) box.append(el('div', 'ghost', cur.c));
@@ -1932,11 +1986,22 @@ function renderWords(set) {
     const undo = el('button', null, '上一筆'); undo.onclick = () => d.undo();
     const clr = el('button', null, '清除'); clr.onclick = () => d.clear();
     const go = el('button', 'primary', step === 1 ? '描好了，下一步 ▶' : '寫好了，對答案');
+    const tip = el('div', 'wptip');
     go.onclick = () => {
+      const st = d.item.strokes;
+      if (!st.length) { tip.textContent = step === 1 ? '先照著淡淡的字描一描喔！' : '還沒寫字喔！看注音，把字寫在格子裡。'; tip.className = 'wptip show'; return; }
       if (step === 1) { step = 2; draw(); return; }
-      check(d.item.strokes);
+      const sim = inkSim(st, cur.c);
+      if (sim < 0.42) { tip.textContent = '這個字看起來還沒寫完整，再寫寫看喔！（可以按「清除」重寫）'; tip.className = 'wptip show'; return; }
+      check(st);
     };
-    btns.append(undo, clr, go); view.append(btns);
+    if (step === 2) {
+      // 忘記了：不扣血，回到描字（這個字就不能拿 +10 分，會記進常錯區）
+      const forgot = el('button', 'forgot', '忘記了，重描 ↺');
+      forgot.onclick = () => { markWrong(); step = 1; draw(); flash('沒關係，描一次就記住了！'); };
+      btns.append(undo, clr, forgot, go);
+    } else btns.append(undo, clr, go);
+    view.append(btns, tip);
   }
   function check(strokes) {
     view.querySelector('.wpbtns').remove();
@@ -1948,21 +2013,24 @@ function renderWords(set) {
     const ans = el('div'); ans.append(el('div', 'ans', cur.c), el('div', null, '正確的字'));
     ck.append(mine, ans); view.append(ck);
     const btns = el('div', 'wpbtns');
-    const ok = el('button', 'primary', '寫對了 ✓'); const ng = el('button', null, '寫錯了，再練一次 ↺');
-    ok.onclick = () => { doneCount++; wb.hit(1, ok, !!cur.tries); if (!cur.tries) { pts += 10; flash('+10 分！'); if (set.mistakes) bumpMistakes([{ c: cur.c, delta: -1 }]); } next(); };
-    ng.onclick = () => { wb.miss(); if (!cur.tries) { firstWrong.add(cur.c); if (!set.mistakes) bumpMistakes([{ c: cur.c, z: cur.z, w: cur.w, delta: 1 }]); } cur.tries++; queue.push(cur); next(); };
+    const gain = maxed ? 0 : (cur.tries ? 5 : 10);
+    const ok = el('button', 'primary', gain ? `寫對了 +${gain} 金幣 ✓` : '寫對了 ✓'); const ng = el('button', null, '再挑戰一次 ↺');
+    ok.onclick = () => { doneCount++; wb.hit(1, ok, !gain); pts += gain; flash(gain ? `+${gain} 金幣！` : '寫對了！'); if (gain) { SFX.coin(); SFX.coin(.12); } if (gain && saveProg) saveProg(pts); if (!cur.tries) { if (set.mistakes) bumpMistakes([{ c: cur.c, delta: -1 }]); } next(); };
+    // 寫錯了：不扣血，留在同一個字，先描一次再自己寫（這個字就不能拿 +10 了）
+    ng.onclick = () => { markWrong(); step = 2; draw(); };   // 同一個字直接再寫一次（想先描可以按「忘記了，重描」）
     btns.append(ng, ok); view.append(btns);
   }
+  function markWrong() { if (!cur.tries) { firstWrong.add(cur.c); if (!set.mistakes) bumpMistakes([{ c: cur.c, z: cur.z, w: cur.w, delta: 1 }]); } cur.tries++; }
   function flash(t) {
     const f = el('div', 'wpflash', t); document.body.append(f); setTimeout(() => f.remove(), 900);
   }
   function finish() {
     pads = []; view.innerHTML = '';
     const score = pts;
-    setTimeout(() => celebrate(Math.round(pts / (total * 10) * 100), '🎉 練習完成！', `🪙 ${pts} 分`), 50);
+    setTimeout(() => celebrate(Math.round(pts / (total * 10) * 100), '🎉 練習完成！', `🪙 +${pts} 金幣`), 50);
     const d = el('div', 'wpdone');
     d.append(el('div', 'big', '🎉 練習完成！'));
-    d.append(el('div', 'wpscore', `得到 ${pts} 分（滿分 ${total * 10} 分）`));
+    d.append(el('div', 'wpscore', `得到 ${pts} 金幣（滿分 ${total * 10} 金幣）`));
     d.append(el('div', null, `一共 ${total} 個字，第一次就寫對 ${total - firstWrong.size} 個`));
     if (firstWrong.size) { d.append(el('div', null, '多練了幾次的字：')); d.append(el('div', 'chars', [...firstWrong].join(''))); }
     view.append(d);
@@ -1971,10 +2039,45 @@ function renderWords(set) {
     const back = el('button', 'primary', '回到國語'); back.onclick = () => backTo();
     btns.append(again, back); view.append(btns);
     if (set.mistakes) { back.textContent = '回到國語'; d.append(el('div', 'hint', '第一次就寫對的字，常錯次數會減 1；減到 0 就會離開常錯區。')); }
-    else Store.saveRecord(curKid.id, set.id, score, true).catch(() => view.append(statusLine('紀錄沒存成功', true)));
+    else saveProg(score).catch(() => view.append(statusLine('紀錄沒存成功', true)));
   }
   next();
   window.scrollTo(0, 0);
+}
+
+/* ---------- 手寫比對：把我寫的字和正確的字縮放到同樣大小，比較筆畫位置有沒有大致重疊 ---------- */
+function inkSim(strokes, ch) {
+  try {
+    const N = 24, S = 96;
+    const pts = strokes.flat(); if (pts.length < 6) return 0;
+    let x0 = 1, y0 = 1, x1 = 0, y1 = 0; pts.forEach(([x, y]) => { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); });
+    const w = Math.max(x1 - x0, .05), h = Math.max(y1 - y0, .05), k = Math.max(w, h);
+    const a = document.createElement('canvas'); a.width = a.height = S; const ac2 = a.getContext('2d');
+    ac2.fillStyle = '#fff'; ac2.fillRect(0, 0, S, S); ac2.lineCap = ac2.lineJoin = 'round'; ac2.strokeStyle = '#000'; ac2.lineWidth = 6;
+    const ox = (k - w) / 2, oy = (k - h) / 2;
+    strokes.forEach(s => { ac2.beginPath(); s.forEach((p, i) => { const X = ((p[0] - x0 + ox) / k) * S, Y = ((p[1] - y0 + oy) / k) * S; i ? ac2.lineTo(X, Y) : ac2.moveTo(X, Y); }); if (s.length === 1) ac2.lineTo(((s[0][0] - x0 + ox) / k) * S + .5, ((s[0][1] - y0 + oy) / k) * S); ac2.stroke(); });
+    // 正確的字：先畫大一點，找出字的範圍，再縮放到同樣大小
+    const g = document.createElement('canvas'); g.width = g.height = 160; const gc = g.getContext('2d');
+    gc.fillStyle = '#fff'; gc.fillRect(0, 0, 160, 160); gc.fillStyle = '#000'; gc.textAlign = 'center'; gc.textBaseline = 'middle';
+    gc.font = '130px "Noto Sans TC","PingFang TC","Heiti TC","Microsoft JhengHei",sans-serif'; gc.fillText(ch, 80, 84);
+    const gd = gc.getImageData(0, 0, 160, 160).data; let gx0 = 160, gy0 = 160, gx1 = 0, gy1 = 0;
+    for (let y = 0; y < 160; y++) for (let x = 0; x < 160; x++) if (gd[(y * 160 + x) * 4] < 128) { gx0 = Math.min(gx0, x); gy0 = Math.min(gy0, y); gx1 = Math.max(gx1, x); gy1 = Math.max(gy1, y); }
+    if (gx1 <= gx0) return 1;                                     // 沒有字型可以比對時，不擋
+    const gw = gx1 - gx0 + 1, gh = gy1 - gy0 + 1, gk = Math.max(gw, gh);
+    const b = document.createElement('canvas'); b.width = b.height = S; const bc = b.getContext('2d'); bc.fillStyle = '#fff'; bc.fillRect(0, 0, S, S);
+    bc.drawImage(g, gx0 - (gk - gw) / 2, gy0 - (gk - gh) / 2, gk, gk, 0, 0, S, S);
+    const grid = (cv) => { const d = cv.getContext('2d').getImageData(0, 0, S, S).data, c = S / N, m = []; for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) { let on = false; for (let y = j * c; y < (j + 1) * c && !on; y++) for (let x = i * c; x < (i + 1) * c; x++) if (d[(y * S + x) * 4] < 128) { on = true; break; } m.push(on); } return m; };
+    const A = grid(a), B = grid(b);
+    const near = (M, i) => { const x = i % N, y = (i / N) | 0; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const X = x + dx, Y = y + dy; if (X >= 0 && Y >= 0 && X < N && Y < N && M[Y * N + X]) return true; } return false; };
+    let nb = 0, hitB = 0, na = 0, hitA = 0;
+    B.forEach((v, i) => { if (v) { nb++; if (near(A, i)) hitB++; } });   // 正確的字，有多少被我寫到（容許偏一點點）
+    A.forEach((v, i) => { if (v) { na++; if (near(B, i)) hitA++; } });   // 我寫的筆畫，有多少落在字的附近
+    if (!na || !nb) return 0;
+    const dens = na / nb;                                                // 塗鴉亂畫時，墨水會比字多很多
+    let sc = Math.min(hitB / nb, hitA / na);
+    if (dens > 1.9) sc *= 1.9 / dens;
+    return sc;
+  } catch (e) { return 1; }
 }
 
 /* ---------- 手寫：共用畫圖 ---------- */
@@ -2367,10 +2470,12 @@ function renderExam(ex) {
   bar.append(sub); app.append(bar);
   const autoHP = state.items.filter(i => i.type === 'choice' || i.type === 'text' || i.type === 'numset').reduce((a, i) => a + i.points, 0);
   if (autoHP > 0) {
-    state.battle = createBattle({ subject: ex.subject, maxHP: Math.round(autoHP * 10) / 10, kidAvatar: curKid.avatar, kidName: curKid.name,
+    const maxed = !ex.practice && isMaxed(ex.id);
+    state.battle = createBattle({ subject: ex.subject, maxHP: Math.round(autoHP * 10) / 10, kidAvatar: curKid.avatar, kidName: curKid.name, noCoin: maxed,
       onDeath: () => { if (state && state.ex === ex) { state.graded = true; showGameOver(() => renderExam(ex)); } } });
+    if (maxed) app.prepend(maxedNote());
     app.prepend(state.battle.el);
-    if (!parentMode) { const hb = el('button', 'hintbtn'); hb.onclick = useHint; state.battle.el.querySelector('.vs').append(hb); updateHintBtn(); }
+    if (!parentMode) { const hb = el('button', 'hintbtn ticketbtn'); hb.onclick = useHint; state.battle.el.querySelector('.fighter.me').append(hb); updateHintBtn(); }
   }
   pads.forEach(p => p.size());
   window.scrollTo(0, 0);
